@@ -4,9 +4,9 @@ class AppConstants {
   static const String deviceName = 'OPPO Pad - PadCast';
   static const String appVersion = '1.0.0';
 
-  // 网络配置
-  static const int airplayPort = 7000;
-  static const int rtspPort = 7001;
+  // 网络配置  
+  static const int airplayPort = 7100;  // 从7000改为7100，避免与ControlCenter冲突
+  static const int rtspPort = 7101;     // 从7001改为7101
   static const String mdnsServiceType = '_airplay._tcp';
 
   // AirPlay配置
