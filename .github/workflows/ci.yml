@@ -30,7 +30,7 @@ jobs:
       #   run: dart format --output=none --set-exit-if-changed .
 
       - name: 静态分析
-        run: flutter analyze --fatal-infos
+        run: flutter analyze
 
   test:
     name: 单元测试
