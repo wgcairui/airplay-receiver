@@ -215,9 +215,11 @@ class AirPlayService {
         'displays': AppConstants.airplayFeatures['displays'],
         // 添加更多AirPlay兼容性字段
         'protovers': '1.0',
-        'pw': '0',
-        'da': 'true',
-        'sv': 'false',
+        'pw': '0', // 不需要密码
+        'da': 'true', // 设备身份验证
+        'sv': 'false', // 不是Apple设备
+        'pk': _generatePublicKey(), // 伪造的公钥
+        'txtvers': '1',
       };
 
       return shelf.Response.ok(
@@ -226,11 +228,12 @@ class AirPlayService {
       );
     });
 
-    // 处理连接请求
+    // 处理配对设置请求
     router.post('/pair-setup', (shelf.Request request) async {
+      Log.i('AirPlayService', '收到pair-setup请求');
       _updateState(_currentState.copyWith(status: ConnectionStatus.connecting));
 
-      // 简化的配对响应（无PIN码）
+      // 无PIN码模式的配对响应
       final response = {
         'status': 0,
         'sessionID': '12345678-1234-1234-1234-123456789ABC'
@@ -242,11 +245,97 @@ class AirPlayService {
       );
     });
 
+    // 处理配对验证请求
+    router.post('/pair-verify', (shelf.Request request) async {
+      Log.i('AirPlayService', '收到pair-verify请求');
+      
+      // 简化的验证响应（跳过加密）
+      final response = {
+        'status': 0,
+        'sessionID': '12345678-1234-1234-1234-123456789ABC'
+      };
+
+      return shelf.Response.ok(
+        jsonEncode(response),
+        headers: {'Content-Type': 'application/json'},
+      );
+    });
+
+    // 处理播放请求
+    router.post('/play', (shelf.Request request) async {
+      Log.i('AirPlayService', '收到play请求');
+      
+      final response = {'status': 0};
+      return shelf.Response.ok(
+        jsonEncode(response),
+        headers: {'Content-Type': 'application/json'},
+      );
+    });
+
+    // 处理停止请求
+    router.post('/stop', (shelf.Request request) async {
+      Log.i('AirPlayService', '收到stop请求');
+      
+      _updateState(_currentState.copyWith(status: ConnectionStatus.disconnected));
+      
+      final response = {'status': 0};
+      return shelf.Response.ok(
+        jsonEncode(response),
+        headers: {'Content-Type': 'application/json'},
+      );
+    });
+
+    // 处理音量控制
+    router.post('/volume', (shelf.Request request) async {
+      final body = await request.readAsString();
+      Log.i('AirPlayService', '收到volume请求: $body');
+      
+      final response = {'status': 0};
+      return shelf.Response.ok(
+        jsonEncode(response),
+        headers: {'Content-Type': 'application/json'},
+      );
+    });
+
+    // 处理属性设置
+    router.put('/property', (shelf.Request request) async {
+      final body = await request.readAsString();
+      Log.i('AirPlayService', '收到property请求: $body');
+      
+      final response = {'status': 0};
+      return shelf.Response.ok(
+        jsonEncode(response),
+        headers: {'Content-Type': 'application/json'},
+      );
+    });
+
+    // 处理反向HTTP连接（Mac镜像显示需要）
+    router.post('/reverse', (shelf.Request request) async {
+      Log.i('AirPlayService', '收到reverse HTTP连接请求');
+      
+      final response = {
+        'status': 0,
+        'streams': [
+          {
+            'type': 110, // 视频流
+            'streamConnectionID': 1,
+          }
+        ]
+      };
+      
+      return shelf.Response.ok(
+        jsonEncode(response),
+        headers: {'Content-Type': 'application/json'},
+      );
+    });
+
     // RTSP流媒体端点
     router.post('/stream', (shelf.Request request) async {
       final clientIP = request.headers['x-forwarded-for'] ??
           request.headers['x-real-ip'] ??
           'Unknown';
+
+      Log.i('AirPlayService', '收到stream请求，客户端IP: $clientIP');
 
       _updateState(_currentState.copyWith(
           status: ConnectionStatus.streaming,
@@ -295,7 +384,35 @@ class AirPlayService {
       );
     });
 
+    // 添加CORS中间件，支持跨域请求
+    shelf.Middleware corsMiddleware() {
+      return (shelf.Handler handler) {
+        return (shelf.Request request) async {
+          if (request.method == 'OPTIONS') {
+            return shelf.Response.ok(
+              '',
+              headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                'Access-Control-Max-Age': '86400',
+              },
+            );
+          }
+
+          final response = await handler(request);
+          return response.change(headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            ...response.headers,
+          });
+        };
+      };
+    }
+
     final handler = const shelf.Pipeline()
+        .addMiddleware(corsMiddleware())
         .addMiddleware(shelf.logRequests())
         .addHandler(router.call);
 
@@ -540,6 +657,13 @@ class AirPlayService {
     final timestamp = DateTime.now().millisecondsSinceEpoch.toRadixString(16);
     final random = localIP.hashCode.abs().toRadixString(16).padLeft(8, '0');
     return '${timestamp.substring(0, 8)}-${random.substring(0, 4)}-4000-8000-${timestamp.substring(8)}${random.substring(4)}';
+  }
+
+  String _generatePublicKey() {
+    // 生成伪造的Ed25519公钥（32字节，Base64编码）
+    // 实际的AirPlay需要真实的密钥对，这里为了兼容性提供伪造的
+    const fakeKey = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    return fakeKey;
   }
 
   // ==================== 设置管理 ====================
