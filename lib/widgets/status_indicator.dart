@@ -15,7 +15,7 @@ class StatusIndicator extends StatefulWidget {
   final double size;
   final bool animate;
   final VoidCallback? onTap;
-  
+
   const StatusIndicator({
     super.key,
     required this.type,
@@ -24,7 +24,7 @@ class StatusIndicator extends StatefulWidget {
     this.animate = true,
     this.onTap,
   });
-  
+
   @override
   State<StatusIndicator> createState() => _StatusIndicatorState();
 }
@@ -34,7 +34,7 @@ class _StatusIndicatorState extends State<StatusIndicator>
   late AnimationController _animationController;
   late Animation<double> _pulseAnimation;
   late Animation<double> _rotationAnimation;
-  
+
   @override
   void initState() {
     super.initState();
@@ -42,7 +42,7 @@ class _StatusIndicatorState extends State<StatusIndicator>
       duration: const Duration(seconds: 2),
       vsync: this,
     );
-    
+
     _pulseAnimation = Tween<double>(
       begin: 0.8,
       end: 1.2,
@@ -50,7 +50,7 @@ class _StatusIndicatorState extends State<StatusIndicator>
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
-    
+
     _rotationAnimation = Tween<double>(
       begin: 0,
       end: 1,
@@ -58,27 +58,28 @@ class _StatusIndicatorState extends State<StatusIndicator>
       parent: _animationController,
       curve: Curves.linear,
     ));
-    
+
     if (widget.animate) {
       if (widget.type == StatusType.loading) {
         _animationController.repeat();
-      } else if (widget.type == StatusType.warning || widget.type == StatusType.error) {
+      } else if (widget.type == StatusType.warning ||
+          widget.type == StatusType.error) {
         _animationController.repeat(reverse: true);
       }
     }
   }
-  
+
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final colors = _getColorsForType(widget.type);
     final icon = _getIconForType(widget.type);
-    
+
     Widget indicatorWidget = Container(
       width: widget.size,
       height: widget.size,
@@ -96,7 +97,7 @@ class _StatusIndicatorState extends State<StatusIndicator>
         color: colors.iconColor,
       ),
     );
-    
+
     // 应用动画
     if (widget.animate) {
       if (widget.type == StatusType.loading) {
@@ -109,7 +110,8 @@ class _StatusIndicatorState extends State<StatusIndicator>
             );
           },
         );
-      } else if (widget.type == StatusType.warning || widget.type == StatusType.error) {
+      } else if (widget.type == StatusType.warning ||
+          widget.type == StatusType.error) {
         indicatorWidget = AnimatedBuilder(
           animation: _pulseAnimation,
           builder: (context, child) {
@@ -121,7 +123,7 @@ class _StatusIndicatorState extends State<StatusIndicator>
         );
       }
     }
-    
+
     // 添加文本
     if (widget.text != null) {
       return GestureDetector(
@@ -143,13 +145,13 @@ class _StatusIndicatorState extends State<StatusIndicator>
         ),
       );
     }
-    
+
     return GestureDetector(
       onTap: widget.onTap,
       child: indicatorWidget,
     );
   }
-  
+
   _StatusColors _getColorsForType(StatusType type) {
     switch (type) {
       case StatusType.success:
@@ -189,7 +191,7 @@ class _StatusIndicatorState extends State<StatusIndicator>
         );
     }
   }
-  
+
   IconData _getIconForType(StatusType type) {
     switch (type) {
       case StatusType.success:
@@ -211,7 +213,7 @@ class _StatusColors {
   final Color borderColor;
   final Color iconColor;
   final Color textColor;
-  
+
   const _StatusColors({
     required this.backgroundColor,
     required this.borderColor,
@@ -226,7 +228,7 @@ class StatusBadge extends StatelessWidget {
   final StatusType type;
   final bool isOutlined;
   final VoidCallback? onTap;
-  
+
   const StatusBadge({
     super.key,
     required this.text,
@@ -234,11 +236,11 @@ class StatusBadge extends StatelessWidget {
     this.isOutlined = false,
     this.onTap,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     final colors = _getColorsForType(type);
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -262,7 +264,7 @@ class StatusBadge extends StatelessWidget {
       ),
     );
   }
-  
+
   _StatusColors _getColorsForType(StatusType type) {
     switch (type) {
       case StatusType.success:
@@ -311,7 +313,7 @@ class ProgressIndicator extends StatefulWidget {
   final Color? color;
   final double height;
   final bool animate;
-  
+
   const ProgressIndicator({
     super.key,
     required this.progress,
@@ -320,7 +322,7 @@ class ProgressIndicator extends StatefulWidget {
     this.height = 4,
     this.animate = true,
   });
-  
+
   @override
   State<ProgressIndicator> createState() => _ProgressIndicatorState();
 }
@@ -329,7 +331,7 @@ class _ProgressIndicatorState extends State<ProgressIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _progressAnimation;
-  
+
   @override
   void initState() {
     super.initState();
@@ -337,7 +339,7 @@ class _ProgressIndicatorState extends State<ProgressIndicator>
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    
+
     _progressAnimation = Tween<double>(
       begin: 0,
       end: widget.progress,
@@ -345,12 +347,12 @@ class _ProgressIndicatorState extends State<ProgressIndicator>
       parent: _animationController,
       curve: Curves.easeOut,
     ));
-    
+
     if (widget.animate) {
       _animationController.forward();
     }
   }
-  
+
   @override
   void didUpdateWidget(ProgressIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -362,24 +364,24 @@ class _ProgressIndicatorState extends State<ProgressIndicator>
         parent: _animationController,
         curve: Curves.easeOut,
       ));
-      
+
       if (widget.animate) {
         _animationController.reset();
         _animationController.forward();
       }
     }
   }
-  
+
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final color = widget.color ?? Theme.of(context).primaryColor;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -421,7 +423,8 @@ class _ProgressIndicatorState extends State<ProgressIndicator>
                       child: Container(
                         decoration: BoxDecoration(
                           color: color,
-                          borderRadius: BorderRadius.circular(widget.height / 2),
+                          borderRadius:
+                              BorderRadius.circular(widget.height / 2),
                         ),
                       ),
                     );

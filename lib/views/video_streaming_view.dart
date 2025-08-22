@@ -13,41 +13,40 @@ class VideoStreamingView extends StatefulWidget {
 }
 
 class _VideoStreamingViewState extends State<VideoStreamingView> {
-  
   @override
   void initState() {
     super.initState();
-    
+
     // 设置全屏和横屏
     _setupFullscreenMode();
   }
-  
+
   @override
   void dispose() {
     // 恢复竖屏和系统UI
     _restoreNormalMode();
     super.dispose();
   }
-  
+
   void _setupFullscreenMode() {
     // 设置横屏
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    
+
     // 隐藏状态栏和导航栏
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.immersiveSticky,
     );
   }
-  
+
   void _restoreNormalMode() {
     // 恢复竖屏
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
-    
+
     // 显示系统UI
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.edgeToEdge,
@@ -61,20 +60,24 @@ class _VideoStreamingViewState extends State<VideoStreamingView> {
       body: Consumer<AirPlayController>(
         builder: (context, controller, child) {
           final connectionState = controller.connectionState;
-          
+
           return Stack(
             children: [
               // 视频渲染器
               Positioned.fill(
                 child: VideoRendererWidget(
-                  decoderService: controller.isServiceRunning ? controller.videoDecoderService : null,
+                  decoderService: controller.isServiceRunning
+                      ? controller.videoDecoderService
+                      : null,
                   syncService: controller.syncService,
-                  performanceService: controller.isServiceRunning ? controller.performanceMonitorService : null,
+                  performanceService: controller.isServiceRunning
+                      ? controller.performanceMonitorService
+                      : null,
                   isPlaying: connectionState.isStreaming,
                   onTap: _handleVideoTap,
                 ),
               ),
-              
+
               // 连接状态覆盖层
               if (!connectionState.isStreaming)
                 Positioned.fill(
@@ -107,10 +110,12 @@ class _VideoStreamingViewState extends State<VideoStreamingView> {
                               fontSize: 14,
                             ),
                           ),
-                          
+
                           // 加载指示器
-                          if (connectionState.status == ConnectionStatus.connecting ||
-                              connectionState.status == ConnectionStatus.discovering)
+                          if (connectionState.status ==
+                                  ConnectionStatus.connecting ||
+                              connectionState.status ==
+                                  ConnectionStatus.discovering)
                             const Padding(
                               padding: EdgeInsets.only(top: 24),
                               child: CircularProgressIndicator(
@@ -123,7 +128,7 @@ class _VideoStreamingViewState extends State<VideoStreamingView> {
                     ),
                   ),
                 ),
-              
+
               // 退出按钮 (左上角)
               Positioned(
                 top: MediaQuery.of(context).padding.top + 16,
@@ -146,7 +151,7 @@ class _VideoStreamingViewState extends State<VideoStreamingView> {
                   ),
                 ),
               ),
-              
+
               // 性能信息 (右上角)
               if (connectionState.isStreaming)
                 Positioned(
@@ -154,7 +159,8 @@ class _VideoStreamingViewState extends State<VideoStreamingView> {
                   right: 16,
                   child: SafeArea(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(16),
@@ -202,12 +208,12 @@ class _VideoStreamingViewState extends State<VideoStreamingView> {
       ),
     );
   }
-  
+
   void _handleVideoTap() {
     // 视频区域点击处理
     print('视频区域被点击');
   }
-  
+
   IconData _getStatusIcon(ConnectionStatus status) {
     switch (status) {
       case ConnectionStatus.disconnected:
@@ -224,7 +230,7 @@ class _VideoStreamingViewState extends State<VideoStreamingView> {
         return Icons.error_outline;
     }
   }
-  
+
   String _getStatusDescription(ConnectionStatus status) {
     switch (status) {
       case ConnectionStatus.disconnected:

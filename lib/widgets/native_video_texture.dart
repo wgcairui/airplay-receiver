@@ -8,7 +8,7 @@ class NativeVideoTexture extends StatefulWidget {
   final bool autoStart;
   final VoidCallback? onTextureCreated;
   final Function(String)? onError;
-  
+
   const NativeVideoTexture({
     super.key,
     this.width = 1920,
@@ -23,40 +23,42 @@ class NativeVideoTexture extends StatefulWidget {
 }
 
 class _NativeVideoTextureState extends State<NativeVideoTexture> {
-  static const MethodChannel _channel = MethodChannel('com.airplay.padcast.receiver/video_decoder');
-  static const EventChannel _eventChannel = EventChannel('com.airplay.padcast.receiver/video_events');
-  
+  static const MethodChannel _channel =
+      MethodChannel('com.airplay.padcast.receiver/video_decoder');
+  static const EventChannel _eventChannel =
+      EventChannel('com.airplay.padcast.receiver/video_events');
+
   int? _textureId;
   bool _isInitialized = false;
   StreamSubscription? _eventSubscription;
-  
+
   @override
   void initState() {
     super.initState();
     _initializeTexture();
     _listenToEvents();
   }
-  
+
   @override
   void dispose() {
     _eventSubscription?.cancel();
     _releaseTexture();
     super.dispose();
   }
-  
+
   Future<void> _initializeTexture() async {
     try {
       // 创建纹理
       final textureId = await _channel.invokeMethod('createTexture');
-      
+
       if (textureId != null && textureId != -1) {
         setState(() {
           _textureId = textureId;
           _isInitialized = true;
         });
-        
+
         widget.onTextureCreated?.call();
-        
+
         if (widget.autoStart) {
           await _startDecoding();
         }
@@ -65,14 +67,14 @@ class _NativeVideoTextureState extends State<NativeVideoTexture> {
       widget.onError?.call('Failed to create texture: $e');
     }
   }
-  
+
   void _listenToEvents() {
     _eventSubscription = _eventChannel.receiveBroadcastStream().listen(
       (event) {
         if (event is Map) {
           final eventType = event['event'] as String?;
           final data = event['data'] as Map?;
-          
+
           switch (eventType) {
             case 'frameAvailable':
               // 纹理有新帧可用，触发重绘
@@ -100,7 +102,7 @@ class _NativeVideoTextureState extends State<NativeVideoTexture> {
       },
     );
   }
-  
+
   Future<void> _startDecoding() async {
     try {
       await _channel.invokeMethod('start');
@@ -108,7 +110,7 @@ class _NativeVideoTextureState extends State<NativeVideoTexture> {
       widget.onError?.call('Failed to start decoding: $e');
     }
   }
-  
+
   Future<void> _releaseTexture() async {
     try {
       await _channel.invokeMethod('release');
@@ -116,7 +118,7 @@ class _NativeVideoTextureState extends State<NativeVideoTexture> {
       print('Error releasing texture: $e');
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     if (!_isInitialized || _textureId == null) {
@@ -139,7 +141,7 @@ class _NativeVideoTextureState extends State<NativeVideoTexture> {
         ),
       );
     }
-    
+
     return SizedBox(
       width: widget.width,
       height: widget.height,
@@ -154,7 +156,7 @@ class VideoPlayerWidget extends StatefulWidget {
   final double? height;
   final bool showControls;
   final VoidCallback? onTap;
-  
+
   const VideoPlayerWidget({
     super.key,
     this.width,
@@ -170,13 +172,13 @@ class VideoPlayerWidget extends StatefulWidget {
 class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   bool _isPlaying = false;
   String? _errorMessage;
-  
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final width = widget.width ?? size.width;
     final height = widget.height ?? size.height;
-    
+
     return Container(
       width: width,
       height: height,
@@ -205,7 +207,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
               ),
             ),
           ),
-          
+
           // 错误显示
           if (_errorMessage != null)
             Positioned.fill(
@@ -243,7 +245,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                 ),
               ),
             ),
-          
+
           // 播放状态指示器
           if (!_isPlaying && _errorMessage == null)
             const Positioned.fill(

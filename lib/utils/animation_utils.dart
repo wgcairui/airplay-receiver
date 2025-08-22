@@ -6,12 +6,12 @@ class AnimationUtils {
   static const Duration fastDuration = Duration(milliseconds: 200);
   static const Duration normalDuration = Duration(milliseconds: 300);
   static const Duration slowDuration = Duration(milliseconds: 500);
-  
+
   // 动画曲线常量
   static const Curve defaultCurve = Curves.easeInOut;
   static const Curve bounceCurve = Curves.elasticOut;
   static const Curve slideCurve = Curves.easeOut;
-  
+
   /// 淡入淡出动画
   static Widget fadeIn({
     required Widget child,
@@ -32,7 +32,7 @@ class AnimationUtils {
       child: child,
     );
   }
-  
+
   /// 滑动进入动画
   static Widget slideIn({
     required Widget child,
@@ -56,7 +56,7 @@ class AnimationUtils {
       child: child,
     );
   }
-  
+
   /// 缩放进入动画
   static Widget scaleIn({
     required Widget child,
@@ -77,7 +77,7 @@ class AnimationUtils {
       child: child,
     );
   }
-  
+
   /// 旋转动画
   static Widget rotate({
     required Widget child,
@@ -99,7 +99,7 @@ class AnimationUtils {
       child: child,
     );
   }
-  
+
   /// 组合动画：淡入 + 滑动
   static Widget fadeSlideIn({
     required Widget child,
@@ -115,7 +115,7 @@ class AnimationUtils {
       ),
     );
   }
-  
+
   /// 交错动画列表
   static List<Widget> staggeredList({
     required List<Widget> children,
@@ -124,7 +124,7 @@ class AnimationUtils {
   }) {
     return children.asMap().entries.map((entry) {
       final child = entry.value;
-      
+
       return AnimatedBuilder(
         animation: AlwaysStoppedAnimation(0),
         builder: (context, _) {
@@ -155,7 +155,7 @@ class AnimatedContainer extends StatefulWidget {
   final Duration duration;
   final Curve curve;
   final VoidCallback? onComplete;
-  
+
   const AnimatedContainer({
     super.key,
     required this.child,
@@ -163,7 +163,7 @@ class AnimatedContainer extends StatefulWidget {
     this.curve = AnimationUtils.defaultCurve,
     this.onComplete,
   });
-  
+
   @override
   State<AnimatedContainer> createState() => _AnimatedContainerState();
 }
@@ -173,7 +173,7 @@ class _AnimatedContainerState extends State<AnimatedContainer>
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  
+
   @override
   void initState() {
     super.initState();
@@ -181,7 +181,7 @@ class _AnimatedContainerState extends State<AnimatedContainer>
       duration: widget.duration,
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -189,7 +189,7 @@ class _AnimatedContainerState extends State<AnimatedContainer>
       parent: _controller,
       curve: widget.curve,
     ));
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
@@ -197,18 +197,18 @@ class _AnimatedContainerState extends State<AnimatedContainer>
       parent: _controller,
       curve: widget.curve,
     ));
-    
+
     _controller.forward().then((_) {
       widget.onComplete?.call();
     });
   }
-  
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -231,14 +231,14 @@ class BouncyButton extends StatefulWidget {
   final Widget child;
   final VoidCallback? onPressed;
   final Duration duration;
-  
+
   const BouncyButton({
     super.key,
     required this.child,
     this.onPressed,
     this.duration = const Duration(milliseconds: 150),
   });
-  
+
   @override
   State<BouncyButton> createState() => _BouncyButtonState();
 }
@@ -247,7 +247,7 @@ class _BouncyButtonState extends State<BouncyButton>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
-  
+
   @override
   void initState() {
     super.initState();
@@ -255,7 +255,7 @@ class _BouncyButtonState extends State<BouncyButton>
       duration: widget.duration,
       vsync: this,
     );
-    
+
     _scaleAnimation = Tween<double>(
       begin: 1.0,
       end: 0.95,
@@ -264,13 +264,13 @@ class _BouncyButtonState extends State<BouncyButton>
       curve: Curves.easeInOut,
     ));
   }
-  
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -303,7 +303,7 @@ class LoadingStateTransition extends StatelessWidget {
   final Widget loadingWidget;
   final Widget contentWidget;
   final Duration duration;
-  
+
   const LoadingStateTransition({
     super.key,
     required this.isLoading,
@@ -311,7 +311,7 @@ class LoadingStateTransition extends StatelessWidget {
     required this.contentWidget,
     this.duration = AnimationUtils.normalDuration,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
@@ -330,9 +330,7 @@ class LoadingStateTransition extends StatelessWidget {
           ),
         );
       },
-      child: isLoading
-          ? loadingWidget
-          : contentWidget,
+      child: isLoading ? loadingWidget : contentWidget,
     );
   }
 }
@@ -362,7 +360,7 @@ class PageTransitions {
       },
     );
   }
-  
+
   /// 淡入转场
   static PageRouteBuilder fadeTransition({
     required Widget page,
@@ -379,7 +377,7 @@ class PageTransitions {
       },
     );
   }
-  
+
   /// 缩放转场
   static PageRouteBuilder scaleTransition({
     required Widget page,

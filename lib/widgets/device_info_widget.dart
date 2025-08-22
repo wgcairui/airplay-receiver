@@ -34,9 +34,9 @@ class DeviceInfoWidget extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // 设备规格信息
             Container(
               padding: const EdgeInsets.all(16),
@@ -66,9 +66,9 @@ class DeviceInfoWidget extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             Text(
               '在Mac上选择AirPlay，找到并连接到此设备',
               textAlign: TextAlign.center,
@@ -82,7 +82,7 @@ class DeviceInfoWidget extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [

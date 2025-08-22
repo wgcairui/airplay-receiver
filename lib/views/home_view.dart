@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/airplay_controller.dart';
-import '../models/connection_state.dart' show ConnectionStatus, AirPlayConnectionState;
+import '../models/connection_state.dart'
+    show ConnectionStatus, AirPlayConnectionState;
 import '../constants/app_constants.dart';
 import '../services/network_monitor_service.dart';
 import '../widgets/connection_status_widget.dart';
@@ -101,33 +102,34 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       body: Consumer<AirPlayController>(
         builder: (context, controller, child) {
           final connectionState = controller.connectionState;
-          
+
           // 检测状态变化，自动跳转到视频页面
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _handleConnectionStateChange(connectionState);
           });
-          
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(AppConstants.defaultPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 32),
-                
+
                 // 连接状态显示
                 AnimationUtils.fadeSlideIn(
-                  child: ConnectionStatusWidget(connectionState: connectionState),
+                  child:
+                      ConnectionStatusWidget(connectionState: connectionState),
                 ),
-                
+
                 const SizedBox(height: 48),
-                
+
                 // 设备信息卡片
                 AnimationUtils.fadeSlideIn(
                   child: const DeviceInfoWidget(),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // 等待连接状态图标
                 if (!connectionState.isStreaming)
                   AnimationUtils.scaleIn(
@@ -135,23 +137,29 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                       animation: _pulseAnimation,
                       builder: (context, child) {
                         return Transform.scale(
-                          scale: connectionState.status == ConnectionStatus.discovering 
-                              ? _pulseAnimation.value 
+                          scale: connectionState.status ==
+                                  ConnectionStatus.discovering
+                              ? _pulseAnimation.value
                               : 1.0,
                           child: Container(
                             width: 200,
                             height: 200,
                             decoration: BoxDecoration(
                               color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+                              borderRadius: BorderRadius.circular(
+                                  AppConstants.cardRadius),
                               border: Border.all(
-                                color: _getStatusColor(connectionState.status).withValues(alpha: 0.3),
+                                color: _getStatusColor(connectionState.status)
+                                    .withValues(alpha: 0.3),
                                 width: 2,
                               ),
-                              boxShadow: connectionState.status == ConnectionStatus.discovering
+                              boxShadow: connectionState.status ==
+                                      ConnectionStatus.discovering
                                   ? [
                                       BoxShadow(
-                                        color: _getStatusColor(connectionState.status).withValues(alpha: 0.3),
+                                        color: _getStatusColor(
+                                                connectionState.status)
+                                            .withValues(alpha: 0.3),
                                         blurRadius: 20,
                                         spreadRadius: 5,
                                       ),
@@ -164,7 +172,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                 Icon(
                                   _getStatusIcon(connectionState.status),
                                   size: 64,
-                                  color: _getStatusColor(connectionState.status),
+                                  color:
+                                      _getStatusColor(connectionState.status),
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
@@ -182,7 +191,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                       },
                     ),
                   ),
-                
+
                 // 流媒体显示区域（占位符）
                 if (connectionState.isStreaming)
                   AnimationUtils.scaleIn(
@@ -192,7 +201,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                       height: 400,
                       decoration: BoxDecoration(
                         color: Colors.black,
-                        borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+                        borderRadius:
+                            BorderRadius.circular(AppConstants.cardRadius),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.green.withValues(alpha: 0.3),
@@ -227,9 +237,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // 控制按钮
                 AnimationUtils.fadeSlideIn(
                   child: ControlButtonsWidget(
@@ -240,9 +250,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                     onToggleService: () => controller.toggleService(),
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // 连接测试快捷按钮
                 AnimationUtils.fadeSlideIn(
                   child: SizedBox(
@@ -263,7 +273,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppConstants.buttonRadius),
+                            borderRadius: BorderRadius.circular(
+                                AppConstants.buttonRadius),
                           ),
                           side: BorderSide(
                             color: Colors.blue[300]!,
@@ -274,12 +285,13 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // 网络信息
                 AnimationUtils.fadeSlideIn(
-                  child: _buildNetworkInfoCard(context, controller.networkInfo, connectionState),
+                  child: _buildNetworkInfoCard(
+                      context, controller.networkInfo, connectionState),
                 ),
               ],
             ),
@@ -288,7 +300,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   IconData _getStatusIcon(ConnectionStatus status) {
     switch (status) {
       case ConnectionStatus.disconnected:
@@ -305,7 +317,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         return Icons.error_outline;
     }
   }
-  
+
   Color _getStatusColor(ConnectionStatus status) {
     switch (status) {
       case ConnectionStatus.disconnected:
@@ -322,7 +334,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         return Colors.red;
     }
   }
-  
+
   String _getStatusDescription(ConnectionStatus status) {
     switch (status) {
       case ConnectionStatus.disconnected:
@@ -339,12 +351,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         return '连接出现问题\n请检查网络设置';
     }
   }
-  
-  Widget _buildNetworkInfoCard(
-    BuildContext context, 
-    AppNetworkInfo networkInfo, 
-    AirPlayConnectionState connectionState
-  ) {
+
+  Widget _buildNetworkInfoCard(BuildContext context, AppNetworkInfo networkInfo,
+      AirPlayConnectionState connectionState) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -359,8 +368,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
               children: [
                 Icon(
                   _getNetworkIcon(networkInfo.type),
-                  color: networkInfo.isConnected 
-                      ? Colors.green[600] 
+                  color: networkInfo.isConnected
+                      ? Colors.green[600]
                       : Colors.red[600],
                 ),
                 const SizedBox(width: 12),
@@ -388,9 +397,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // AirPlay服务状态
             Row(
               children: [
@@ -424,9 +433,10 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                 ),
               ],
             ),
-            
+
             // 连接提示
-            if (networkInfo.isConnected && connectionState.status == ConnectionStatus.disconnected)
+            if (networkInfo.isConnected &&
+                connectionState.status == ConnectionStatus.disconnected)
               Container(
                 margin: const EdgeInsets.only(top: 12),
                 padding: const EdgeInsets.all(12),
@@ -437,9 +447,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, 
-                         color: Colors.blue[600], 
-                         size: 20),
+                    Icon(Icons.info_outline, color: Colors.blue[600], size: 20),
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
@@ -455,7 +463,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   IconData _getNetworkIcon(NetworkType type) {
     switch (type) {
       case NetworkType.wifi:
@@ -468,12 +476,12 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         return Icons.wifi_off;
     }
   }
-  
+
   String _getNetworkDisplayName(AppNetworkInfo networkInfo) {
     if (!networkInfo.isConnected) {
       return '网络未连接';
     }
-    
+
     switch (networkInfo.type) {
       case NetworkType.wifi:
         return networkInfo.ssid ?? 'WiFi已连接';
@@ -485,11 +493,11 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         return '网络未连接';
     }
   }
-  
+
   void _handleConnectionStateChange(AirPlayConnectionState newState) {
     final oldStatus = _lastConnectionState?.status;
     final newStatus = newState.status;
-    
+
     // 显示状态变化的Toast通知
     if (oldStatus != newStatus) {
       switch (newStatus) {
@@ -541,7 +549,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           break;
       }
     }
-    
+
     _lastConnectionState = newState;
   }
 }

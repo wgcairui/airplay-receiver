@@ -11,7 +11,7 @@ enum ToastType {
 /// Toast通知工具类
 class ToastNotification {
   static OverlayEntry? _currentOverlay;
-  
+
   /// 显示Toast通知
   static void show(
     BuildContext context, {
@@ -22,7 +22,7 @@ class ToastNotification {
     VoidCallback? onTap,
   }) {
     _removeCurrentToast();
-    
+
     final overlay = Overlay.of(context);
     _currentOverlay = OverlayEntry(
       builder: (context) => _ToastWidget(
@@ -33,15 +33,15 @@ class ToastNotification {
         onDismiss: _removeCurrentToast,
       ),
     );
-    
+
     overlay.insert(_currentOverlay!);
-    
+
     // 自动移除
     Future.delayed(duration, () {
       _removeCurrentToast();
     });
   }
-  
+
   static void showSuccess(
     BuildContext context, {
     required String message,
@@ -56,7 +56,7 @@ class ToastNotification {
       duration: duration,
     );
   }
-  
+
   static void showError(
     BuildContext context, {
     required String message,
@@ -71,7 +71,7 @@ class ToastNotification {
       duration: duration,
     );
   }
-  
+
   static void showWarning(
     BuildContext context, {
     required String message,
@@ -86,7 +86,7 @@ class ToastNotification {
       duration: duration,
     );
   }
-  
+
   static void showInfo(
     BuildContext context, {
     required String message,
@@ -101,7 +101,7 @@ class ToastNotification {
       duration: duration,
     );
   }
-  
+
   static void _removeCurrentToast() {
     _currentOverlay?.remove();
     _currentOverlay = null;
@@ -114,7 +114,7 @@ class _ToastWidget extends StatefulWidget {
   final String? title;
   final VoidCallback? onTap;
   final VoidCallback onDismiss;
-  
+
   const _ToastWidget({
     required this.message,
     required this.type,
@@ -122,7 +122,7 @@ class _ToastWidget extends StatefulWidget {
     this.title,
     this.onTap,
   });
-  
+
   @override
   State<_ToastWidget> createState() => _ToastWidgetState();
 }
@@ -132,7 +132,7 @@ class _ToastWidgetState extends State<_ToastWidget>
   late AnimationController _animationController;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _opacityAnimation;
-  
+
   @override
   void initState() {
     super.initState();
@@ -140,7 +140,7 @@ class _ToastWidgetState extends State<_ToastWidget>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, -1),
       end: Offset.zero,
@@ -148,7 +148,7 @@ class _ToastWidgetState extends State<_ToastWidget>
       parent: _animationController,
       curve: Curves.easeOut,
     ));
-    
+
     _opacityAnimation = Tween<double>(
       begin: 0,
       end: 1,
@@ -156,26 +156,26 @@ class _ToastWidgetState extends State<_ToastWidget>
       parent: _animationController,
       curve: Curves.easeOut,
     ));
-    
+
     _animationController.forward();
   }
-  
+
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
   }
-  
+
   void _dismiss() async {
     await _animationController.reverse();
     widget.onDismiss();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final colors = _getColorsForType(widget.type);
     final icon = _getIconForType(widget.type);
-    
+
     return Positioned(
       top: MediaQuery.of(context).padding.top + 16,
       left: 16,
@@ -196,7 +196,8 @@ class _ToastWidgetState extends State<_ToastWidget>
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: colors.backgroundColor,
-                      borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.cardRadius),
                       border: Border.all(color: colors.borderColor),
                     ),
                     child: Row(
@@ -256,7 +257,7 @@ class _ToastWidgetState extends State<_ToastWidget>
       ),
     );
   }
-  
+
   _ToastColors _getColorsForType(ToastType type) {
     switch (type) {
       case ToastType.success:
@@ -289,7 +290,7 @@ class _ToastWidgetState extends State<_ToastWidget>
         );
     }
   }
-  
+
   IconData _getIconForType(ToastType type) {
     switch (type) {
       case ToastType.success:
@@ -309,7 +310,7 @@ class _ToastColors {
   final Color borderColor;
   final Color iconColor;
   final Color textColor;
-  
+
   const _ToastColors({
     required this.backgroundColor,
     required this.borderColor,
@@ -330,7 +331,7 @@ class EnhancedSnackBar {
   }) {
     final colors = _getColorsForType(type);
     final icon = _getIconForType(type);
-    
+
     return ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -368,7 +369,7 @@ class EnhancedSnackBar {
       ),
     );
   }
-  
+
   static _SnackBarColors _getColorsForType(ToastType type) {
     switch (type) {
       case ToastType.success:
@@ -381,7 +382,7 @@ class EnhancedSnackBar {
         return _SnackBarColors(backgroundColor: Colors.blue[600]!);
     }
   }
-  
+
   static IconData _getIconForType(ToastType type) {
     switch (type) {
       case ToastType.success:
@@ -398,7 +399,7 @@ class EnhancedSnackBar {
 
 class _SnackBarColors {
   final Color backgroundColor;
-  
+
   const _SnackBarColors({
     required this.backgroundColor,
   });

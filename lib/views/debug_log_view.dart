@@ -15,14 +15,14 @@ class _DebugLogViewState extends State<DebugLogView> {
   LogLevel? _filterLevel;
   String? _filterModule;
   bool _autoScroll = true;
-  
+
   final Set<String> _modules = <String>{};
 
   @override
   void initState() {
     super.initState();
     _updateModules();
-    
+
     // 监听新日志
     _logger.logStream.listen((_) {
       _updateModules();
@@ -48,22 +48,22 @@ class _DebugLogViewState extends State<DebugLogView> {
 
   List<LogEntry> get _filteredLogs {
     var logs = _logger.logs;
-    
+
     if (_filterLevel != null) {
       logs = logs.where((log) => log.level == _filterLevel).toList();
     }
-    
+
     if (_filterModule != null) {
       logs = logs.where((log) => log.module == _filterModule).toList();
     }
-    
+
     return logs;
   }
 
   @override
   Widget build(BuildContext context) {
     final filteredLogs = _filteredLogs;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('调试日志'),
@@ -73,7 +73,9 @@ class _DebugLogViewState extends State<DebugLogView> {
         actions: [
           // 自动滚动开关
           IconButton(
-            icon: Icon(_autoScroll ? Icons.vertical_align_bottom : Icons.vertical_align_center),
+            icon: Icon(_autoScroll
+                ? Icons.vertical_align_bottom
+                : Icons.vertical_align_center),
             onPressed: () {
               setState(() {
                 _autoScroll = !_autoScroll;
@@ -114,7 +116,8 @@ class _DebugLogViewState extends State<DebugLogView> {
                     decoration: const InputDecoration(
                       labelText: '日志级别',
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                     items: [
                       const DropdownMenuItem<LogLevel?>(
@@ -122,22 +125,22 @@ class _DebugLogViewState extends State<DebugLogView> {
                         child: Text('全部'),
                       ),
                       ...LogLevel.values.map((level) => DropdownMenuItem(
-                        value: level,
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 12,
-                              height: 12,
-                              decoration: BoxDecoration(
-                                color: _getLevelColor(level),
-                                shape: BoxShape.circle,
-                              ),
+                            value: level,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 12,
+                                  height: 12,
+                                  decoration: BoxDecoration(
+                                    color: _getLevelColor(level),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(level.name.toUpperCase()),
+                              ],
                             ),
-                            const SizedBox(width: 8),
-                            Text(level.name.toUpperCase()),
-                          ],
-                        ),
-                      )),
+                          )),
                     ],
                     onChanged: (value) {
                       setState(() {
@@ -146,9 +149,9 @@ class _DebugLogViewState extends State<DebugLogView> {
                     },
                   ),
                 ),
-                
+
                 const SizedBox(width: 16),
-                
+
                 // 模块过滤
                 Expanded(
                   child: DropdownButtonFormField<String?>(
@@ -157,7 +160,8 @@ class _DebugLogViewState extends State<DebugLogView> {
                     decoration: const InputDecoration(
                       labelText: '模块',
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                     items: [
                       const DropdownMenuItem<String?>(
@@ -165,9 +169,9 @@ class _DebugLogViewState extends State<DebugLogView> {
                         child: Text('全部'),
                       ),
                       ..._modules.map((module) => DropdownMenuItem(
-                        value: module,
-                        child: Text(module),
-                      )),
+                            value: module,
+                            child: Text(module),
+                          )),
                     ],
                     onChanged: (value) {
                       setState(() {
@@ -179,7 +183,7 @@ class _DebugLogViewState extends State<DebugLogView> {
               ],
             ),
           ),
-          
+
           // 日志列表
           Expanded(
             child: ListView.builder(
@@ -329,16 +333,16 @@ class _DebugLogViewState extends State<DebugLogView> {
 
   String _formatTime(DateTime timestamp) {
     return '${timestamp.hour.toString().padLeft(2, '0')}:'
-           '${timestamp.minute.toString().padLeft(2, '0')}:'
-           '${timestamp.second.toString().padLeft(2, '0')}';
+        '${timestamp.minute.toString().padLeft(2, '0')}:'
+        '${timestamp.second.toString().padLeft(2, '0')}';
   }
 
   void _exportLogs() {
     final logs = _filteredLogs;
     final logText = logs.map((log) => log.toString()).join('\n');
-    
+
     Clipboard.setData(ClipboardData(text: logText));
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('日志已复制到剪贴板')),
     );

@@ -11,7 +11,7 @@ class VideoRendererWidget extends StatefulWidget {
   final PerformanceMonitorService? performanceService;
   final bool isPlaying;
   final VoidCallback? onTap;
-  
+
   const VideoRendererWidget({
     super.key,
     this.decoderService,
@@ -25,97 +25,95 @@ class VideoRendererWidget extends StatefulWidget {
   State<VideoRendererWidget> createState() => _VideoRendererWidgetState();
 }
 
-class _VideoRendererWidgetState extends State<VideoRendererWidget> 
+class _VideoRendererWidgetState extends State<VideoRendererWidget>
     with TickerProviderStateMixin {
-  
   late AnimationController _fadeController;
   late AnimationController _scaleController;
-  
+
   // 视频流统计
   DateTime _lastFpsUpdate = DateTime.now();
-  
+
   // 播放控制UI可见性
   bool _showControls = false;
-  
+
   // 解码和同步状态
   DecoderStats? _decoderStats;
   SyncState? _syncState;
   PerformanceMetrics? _performanceMetrics;
-  
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _scaleController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    
+
     // 监听解码器输出
     widget.decoderService?.frameStream.listen(_onVideoFrame);
     widget.decoderService?.statsStream.listen(_onDecoderStats);
-    
+
     // 监听同步状态
     widget.syncService?.syncStateStream.listen(_onSyncState);
-    
+
     // 监听性能指标
     widget.performanceService?.metricsStream.listen(_onPerformanceMetrics);
   }
-  
+
   @override
   void dispose() {
     _fadeController.dispose();
     _scaleController.dispose();
     super.dispose();
   }
-  
+
   void _onVideoFrame(VideoFrame frame) {
     _updateFPS();
-    
+
     // 通知性能监控有新帧
     widget.performanceService?.recordVideoFrame();
   }
-  
+
   void _onDecoderStats(DecoderStats stats) {
     setState(() {
       _decoderStats = stats;
     });
   }
-  
+
   void _onSyncState(SyncState syncState) {
     setState(() {
       _syncState = syncState;
     });
   }
-  
+
   void _onPerformanceMetrics(PerformanceMetrics metrics) {
     setState(() {
       _performanceMetrics = metrics;
     });
   }
-  
+
   void _updateFPS() {
     final now = DateTime.now();
     final elapsed = now.difference(_lastFpsUpdate);
-    
+
     if (elapsed.inMilliseconds >= 1000) {
       setState(() {
         _lastFpsUpdate = now;
       });
     }
   }
-  
+
   void _toggleControls() {
     setState(() {
       _showControls = !_showControls;
     });
-    
+
     if (_showControls) {
       _fadeController.forward();
       // 3秒后自动隐藏控制栏
@@ -128,14 +126,14 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
       _hideControls();
     }
   }
-  
+
   void _hideControls() {
     _fadeController.reverse();
     setState(() {
       _showControls = false;
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -154,7 +152,7 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
               child: _buildVideoRenderer(),
             ),
           ),
-          
+
           // 加载指示器
           if (!widget.isPlaying)
             const Positioned.fill(
@@ -178,7 +176,7 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
                 ),
               ),
             ),
-          
+
           // 顶部状态栏
           AnimatedBuilder(
             animation: _fadeController,
@@ -194,7 +192,7 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
               );
             },
           ),
-          
+
           // 底部控制栏
           AnimatedBuilder(
             animation: _fadeController,
@@ -214,7 +212,7 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
       ),
     );
   }
-  
+
   Widget _buildVideoRenderer() {
     if (!widget.isPlaying) {
       return Container(
@@ -241,7 +239,7 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
         ),
       );
     }
-    
+
     // 使用原生纹理渲染器
     return VideoPlayerWidget(
       showControls: false,
@@ -251,7 +249,7 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
       },
     );
   }
-  
+
   Widget _buildTopStatusBar() {
     return Container(
       height: 60,
@@ -277,9 +275,9 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
                 color: Colors.white,
               ),
             ),
-            
+
             const Spacer(),
-            
+
             // 性能信息
             if (_decoderStats != null || _performanceMetrics != null)
               Container(
@@ -312,7 +310,8 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
                       Text(
                         '${_syncState!.syncDifference.toStringAsFixed(0)}ms',
                         style: TextStyle(
-                          color: _syncState!.isInSync ? Colors.green : Colors.red,
+                          color:
+                              _syncState!.isInSync ? Colors.green : Colors.red,
                           fontSize: 11,
                         ),
                       ),
@@ -325,7 +324,7 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
       ),
     );
   }
-  
+
   Widget _buildBottomControlBar() {
     return Container(
       height: 80,
@@ -353,9 +352,9 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
                 size: 32,
               ),
             ),
-            
+
             const SizedBox(width: 24),
-            
+
             // 设置按钮
             IconButton(
               onPressed: _showVideoSettings,
@@ -370,7 +369,7 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
       ),
     );
   }
-  
+
   void _toggleFullscreen() {
     // 切换全屏模式
     if (MediaQuery.of(context).orientation == Orientation.portrait) {
@@ -383,7 +382,7 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
         DeviceOrientation.portraitUp,
       ]);
     }
-    
+
     // 隐藏系统UI
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
@@ -392,7 +391,7 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
       ),
     );
   }
-  
+
   void _showVideoSettings() {
     showModalBottomSheet(
       context: context,
@@ -416,26 +415,30 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
               ListTile(
                 leading: const Icon(Icons.video_library, color: Colors.white),
                 title: const Text('解码器', style: TextStyle(color: Colors.white)),
-                subtitle: Text('${_decoderStats!.codecType} - ${_decoderStats!.framesDecoded}帧', 
-                              style: const TextStyle(color: Colors.grey)),
+                subtitle: Text(
+                    '${_decoderStats!.codecType} - ${_decoderStats!.framesDecoded}帧',
+                    style: const TextStyle(color: Colors.grey)),
                 onTap: () {},
               ),
               ListTile(
                 leading: const Icon(Icons.refresh, color: Colors.white),
                 title: const Text('帧率', style: TextStyle(color: Colors.white)),
-                subtitle: Text('${_decoderStats!.currentFPS.toStringAsFixed(1)}fps', 
-                              style: const TextStyle(color: Colors.grey)),
+                subtitle: Text(
+                    '${_decoderStats!.currentFPS.toStringAsFixed(1)}fps',
+                    style: const TextStyle(color: Colors.grey)),
                 onTap: () {},
               ),
               ListTile(
                 leading: const Icon(Icons.timer, color: Colors.white),
-                title: const Text('解码延迟', style: TextStyle(color: Colors.white)),
-                subtitle: Text('${_decoderStats!.averageDecodeTime.toStringAsFixed(1)}ms', 
-                              style: const TextStyle(color: Colors.grey)),
+                title:
+                    const Text('解码延迟', style: TextStyle(color: Colors.white)),
+                subtitle: Text(
+                    '${_decoderStats!.averageDecodeTime.toStringAsFixed(1)}ms',
+                    style: const TextStyle(color: Colors.grey)),
                 onTap: () {},
               ),
             ],
-            
+
             // 音视频同步信息
             if (_syncState != null) ...[
               ListTile(
@@ -443,25 +446,29 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
                   _syncState!.isInSync ? Icons.sync : Icons.sync_problem,
                   color: _syncState!.isInSync ? Colors.green : Colors.red,
                 ),
-                title: const Text('音视频同步', style: TextStyle(color: Colors.white)),
+                title:
+                    const Text('音视频同步', style: TextStyle(color: Colors.white)),
                 subtitle: Text(
-                  _syncState!.isInSync ? '同步正常' : '同步异常 (${_syncState!.syncDifference.toStringAsFixed(1)}ms)',
-                  style: TextStyle(color: _syncState!.isInSync ? Colors.green : Colors.red),
+                  _syncState!.isInSync
+                      ? '同步正常'
+                      : '同步异常 (${_syncState!.syncDifference.toStringAsFixed(1)}ms)',
+                  style: TextStyle(
+                      color: _syncState!.isInSync ? Colors.green : Colors.red),
                 ),
                 onTap: () {},
               ),
             ],
-            
+
             // 性能信息
             if (_performanceMetrics != null) ...[
               ListTile(
                 leading: const Icon(Icons.memory, color: Colors.white),
-                title: const Text('系统资源', style: TextStyle(color: Colors.white)),
+                title:
+                    const Text('系统资源', style: TextStyle(color: Colors.white)),
                 subtitle: Text(
-                  'CPU: ${_performanceMetrics!.cpuUsagePercent.toStringAsFixed(1)}% | '
-                  'RAM: ${_performanceMetrics!.memoryUsageMB.toStringAsFixed(0)}MB',
-                  style: const TextStyle(color: Colors.grey)
-                ),
+                    'CPU: ${_performanceMetrics!.cpuUsagePercent.toStringAsFixed(1)}% | '
+                    'RAM: ${_performanceMetrics!.memoryUsageMB.toStringAsFixed(0)}MB',
+                    style: const TextStyle(color: Colors.grey)),
                 onTap: () {},
               ),
             ],

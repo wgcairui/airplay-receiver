@@ -8,7 +8,7 @@ class ErrorDisplay extends StatelessWidget {
   final VoidCallback? onRetry;
   final IconData? icon;
   final bool isCompact;
-  
+
   const ErrorDisplay({
     super.key,
     required this.error,
@@ -17,13 +17,13 @@ class ErrorDisplay extends StatelessWidget {
     this.icon,
     this.isCompact = false,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     if (isCompact) {
       return _buildCompactError(context);
     }
-    
+
     return Center(
       child: Container(
         margin: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -79,7 +79,7 @@ class ErrorDisplay extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildCompactError(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -127,12 +127,12 @@ class ErrorDisplay extends StatelessWidget {
 /// 网络错误显示
 class NetworkErrorDisplay extends StatelessWidget {
   final VoidCallback? onRetry;
-  
+
   const NetworkErrorDisplay({
     super.key,
     this.onRetry,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return ErrorDisplay(
@@ -150,7 +150,7 @@ class EmptyStateDisplay extends StatelessWidget {
   final String? title;
   final IconData? icon;
   final Widget? action;
-  
+
   const EmptyStateDisplay({
     super.key,
     required this.message,
@@ -158,7 +158,7 @@ class EmptyStateDisplay extends StatelessWidget {
     this.icon,
     this.action,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -206,14 +206,14 @@ class SuccessDisplay extends StatelessWidget {
   final String message;
   final String? title;
   final VoidCallback? onContinue;
-  
+
   const SuccessDisplay({
     super.key,
     required this.message,
     this.title,
     this.onContinue,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Center(

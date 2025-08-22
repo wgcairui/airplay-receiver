@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../models/connection_state.dart' show ConnectionStatus, AirPlayConnectionState;
+import '../models/connection_state.dart'
+    show ConnectionStatus, AirPlayConnectionState;
 
 class ConnectionStatusWidget extends StatelessWidget {
   final AirPlayConnectionState connectionState;
-  
+
   const ConnectionStatusWidget({
     super.key,
     required this.connectionState,
@@ -69,7 +70,7 @@ class ConnectionStatusWidget extends StatelessWidget {
       ),
     );
   }
-  
+
   IconData _getStatusIcon(ConnectionStatus status) {
     switch (status) {
       case ConnectionStatus.disconnected:
@@ -86,7 +87,7 @@ class ConnectionStatusWidget extends StatelessWidget {
         return Icons.error_outline;
     }
   }
-  
+
   Color _getBackgroundColor(ConnectionStatus status) {
     switch (status) {
       case ConnectionStatus.disconnected:
@@ -103,7 +104,7 @@ class ConnectionStatusWidget extends StatelessWidget {
         return Colors.red[100]!;
     }
   }
-  
+
   Color _getTextColor(ConnectionStatus status) {
     switch (status) {
       case ConnectionStatus.disconnected:

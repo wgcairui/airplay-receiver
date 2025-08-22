@@ -7,7 +7,7 @@ class LoadingOverlay extends StatelessWidget {
   final Widget child;
   final String? message;
   final Color? backgroundColor;
-  
+
   const LoadingOverlay({
     super.key,
     required this.isLoading,
@@ -15,7 +15,7 @@ class LoadingOverlay extends StatelessWidget {
     this.message,
     this.backgroundColor,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -31,7 +31,7 @@ class LoadingOverlay extends StatelessWidget {
       ],
     );
   }
-  
+
   Widget _buildLoadingContent(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -75,13 +75,13 @@ class LoadingOverlay extends StatelessWidget {
 class LoadingIndicator extends StatelessWidget {
   final String? message;
   final double size;
-  
+
   const LoadingIndicator({
     super.key,
     this.message,
     this.size = 32,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -115,14 +115,14 @@ class SkeletonLoader extends StatefulWidget {
   final double width;
   final double height;
   final double borderRadius;
-  
+
   const SkeletonLoader({
     super.key,
     required this.width,
     required this.height,
     this.borderRadius = 4,
   });
-  
+
   @override
   State<SkeletonLoader> createState() => _SkeletonLoaderState();
 }
@@ -131,7 +131,7 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
-  
+
   @override
   void initState() {
     super.initState();
@@ -148,13 +148,13 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
     ));
     _animationController.repeat();
   }
-  
+
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -189,12 +189,12 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
 /// 卡片骨架屏
 class SkeletonCard extends StatelessWidget {
   final double height;
-  
+
   const SkeletonCard({
     super.key,
     this.height = 120,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Card(

@@ -133,20 +133,21 @@ class MacConnectionGuideDialog extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         ...items.map((item) => Padding(
-          padding: const EdgeInsets.only(left: 28, bottom: 8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('• ', style: TextStyle(fontSize: 16, color: Colors.grey)),
-              Expanded(
-                child: Text(
-                  item,
-                  style: const TextStyle(fontSize: 14, height: 1.4),
-                ),
+              padding: const EdgeInsets.only(left: 28, bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('• ',
+                      style: TextStyle(fontSize: 16, color: Colors.grey)),
+                  Expanded(
+                    child: Text(
+                      item,
+                      style: const TextStyle(fontSize: 14, height: 1.4),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        )),
+            )),
       ],
     );
   }
@@ -178,7 +179,7 @@ mDNS端口: 5353
 ''';
 
     Clipboard.setData(const ClipboardData(text: debugInfo));
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('调试信息已复制到剪贴板'),

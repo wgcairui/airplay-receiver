@@ -15,7 +15,7 @@ class AirPlayConnectionState {
   final int? currentFPS;
   final int? latencyMs;
   final String? resolution;
-  
+
   const AirPlayConnectionState({
     this.status = ConnectionStatus.disconnected,
     this.connectedDeviceName,
@@ -25,7 +25,7 @@ class AirPlayConnectionState {
     this.latencyMs,
     this.resolution,
   });
-  
+
   AirPlayConnectionState copyWith({
     ConnectionStatus? status,
     String? connectedDeviceName,
@@ -45,11 +45,13 @@ class AirPlayConnectionState {
       resolution: resolution ?? this.resolution,
     );
   }
-  
-  bool get isConnected => status == ConnectionStatus.connected || status == ConnectionStatus.streaming;
+
+  bool get isConnected =>
+      status == ConnectionStatus.connected ||
+      status == ConnectionStatus.streaming;
   bool get isStreaming => status == ConnectionStatus.streaming;
   bool get hasError => status == ConnectionStatus.error;
-  
+
   String get statusText {
     switch (status) {
       case ConnectionStatus.disconnected:

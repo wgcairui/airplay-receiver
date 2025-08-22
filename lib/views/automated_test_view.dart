@@ -20,21 +20,21 @@ class AutomatedTestView extends StatefulWidget {
 class _AutomatedTestViewState extends State<AutomatedTestView> {
   late AutomatedTestService _testService;
   bool _isInitialized = false;
-  
+
   TestSuite? _selectedSuite;
   TestReport? _currentReport;
   List<TestResult> _currentResults = [];
   List<String> _testLogs = [];
   bool _isRunning = false;
-  
+
   final List<TestSuite> _availableSuites = [];
-  
+
   @override
   void initState() {
     super.initState();
     _initializeTestService();
   }
-  
+
   Future<void> _initializeTestService() async {
     try {
       // 获取所有必要的服务实例
@@ -45,7 +45,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
       final syncService = AudioVideoSyncService();
       final videoDecoder = VideoDecoderService();
       final audioDecoder = AudioDecoderService();
-      
+
       _testService = AutomatedTestService(
         airplayService: airplayService,
         networkMonitor: networkMonitor,
@@ -54,7 +54,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
         videoDecoder: videoDecoder,
         audioDecoder: audioDecoder,
       );
-      
+
       // 创建测试套件
       _availableSuites.addAll([
         _testService.createBasicTestSuite(),
@@ -62,14 +62,14 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
         _testService.createIntegrationTestSuite(),
         _testService.createRegressionTestSuite(),
       ]);
-      
+
       // 监听测试结果
       _testService.testResultStream.listen((result) {
         setState(() {
           _currentResults.add(result);
         });
       });
-      
+
       // 监听测试报告
       _testService.testReportStream.listen((report) {
         setState(() {
@@ -77,7 +77,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
           _isRunning = false;
         });
       });
-      
+
       // 监听测试日志
       _testService.testLogStream.listen((log) {
         setState(() {
@@ -88,25 +88,24 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
           }
         });
       });
-      
+
       setState(() {
         _isInitialized = true;
         _selectedSuite = _availableSuites.first;
       });
-      
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('初始化测试服务失败: $e')),
       );
     }
   }
-  
+
   @override
   void dispose() {
     _testService.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     if (!_isInitialized) {
@@ -122,7 +121,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
         ),
       );
     }
-    
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -148,7 +147,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
         children: [
           // 测试套件选择和控制面板
           _buildControlPanel(),
-          
+
           // 测试结果区域
           Expanded(
             child: Row(
@@ -158,7 +157,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
                   flex: 2,
                   child: _buildTestResults(),
                 ),
-                
+
                 // 右侧：测试日志和报告
                 Expanded(
                   flex: 1,
@@ -171,7 +170,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
       ),
     );
   }
-  
+
   Widget _buildControlPanel() {
     return Container(
       padding: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -202,9 +201,9 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               // 测试套件下拉选择
@@ -216,7 +215,8 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
                   decoration: const InputDecoration(
                     labelText: '选择测试套件',
                     border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                   items: _availableSuites.map((suite) {
                     return DropdownMenuItem<TestSuite>(
@@ -240,36 +240,39 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
                       ),
                     );
                   }).toList(),
-                  onChanged: _isRunning ? null : (suite) {
-                    setState(() {
-                      _selectedSuite = suite;
-                    });
-                  },
+                  onChanged: _isRunning
+                      ? null
+                      : (suite) {
+                          setState(() {
+                            _selectedSuite = suite;
+                          });
+                        },
                 ),
               ),
-              
+
               const SizedBox(width: 16),
-              
+
               // 运行按钮
               ElevatedButton.icon(
                 onPressed: _isRunning ? null : _runSelectedSuite,
-                icon: _isRunning 
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.play_arrow),
+                icon: _isRunning
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.play_arrow),
                 label: Text(_isRunning ? '运行中...' : '运行测试'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 ),
               ),
-              
+
               const SizedBox(width: 8),
-              
+
               // 导出报告按钮
               OutlinedButton.icon(
                 onPressed: _currentReport != null ? _exportReport : null,
@@ -278,7 +281,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
               ),
             ],
           ),
-          
+
           // 测试套件信息
           if (_selectedSuite != null) ...[
             const SizedBox(height: 12),
@@ -288,13 +291,13 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
       ),
     );
   }
-  
+
   Widget _buildSuiteInfo(TestSuite suite) {
     final testTypeCount = <TestType, int>{};
     for (final testCase in suite.testCases) {
       testTypeCount[testCase.type] = (testTypeCount[testCase.type] ?? 0) + 1;
     }
-    
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -313,26 +316,29 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
             ),
           ),
           const SizedBox(height: 8),
-          
           Row(
             children: [
-              _buildInfoChip('总计', '${suite.testCases.length} 个测试', Colors.grey),
+              _buildInfoChip(
+                  '总计', '${suite.testCases.length} 个测试', Colors.grey),
               const SizedBox(width: 8),
               if (testTypeCount[TestType.unit] != null)
-                _buildInfoChip('单元测试', '${testTypeCount[TestType.unit]}', Colors.green),
+                _buildInfoChip(
+                    '单元测试', '${testTypeCount[TestType.unit]}', Colors.green),
               const SizedBox(width: 8),
               if (testTypeCount[TestType.integration] != null)
-                _buildInfoChip('集成测试', '${testTypeCount[TestType.integration]}', Colors.orange),
+                _buildInfoChip('集成测试', '${testTypeCount[TestType.integration]}',
+                    Colors.orange),
               const SizedBox(width: 8),
               if (testTypeCount[TestType.performance] != null)
-                _buildInfoChip('性能测试', '${testTypeCount[TestType.performance]}', Colors.purple),
+                _buildInfoChip('性能测试', '${testTypeCount[TestType.performance]}',
+                    Colors.purple),
             ],
           ),
         ],
       ),
     );
   }
-  
+
   Widget _buildInfoChip(String label, String value, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -351,7 +357,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
       ),
     );
   }
-  
+
   Widget _buildTestResults() {
     return Container(
       margin: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -389,9 +395,9 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                
+
                 const Spacer(),
-                
+
                 // 统计信息
                 if (_currentResults.isNotEmpty) ...[
                   _buildStatusChip(
@@ -415,48 +421,49 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
               ],
             ),
           ),
-          
+
           // 测试结果列表
           Expanded(
             child: _currentResults.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.assignment_outlined, size: 64, color: Colors.grey),
-                      SizedBox(height: 16),
-                      Text(
-                        '暂无测试结果',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
+                ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.assignment_outlined,
+                            size: 64, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text(
+                          '暂无测试结果',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        '选择测试套件并点击运行开始测试',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
+                        SizedBox(height: 8),
+                        Text(
+                          '选择测试套件并点击运行开始测试',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(8),
+                    itemCount: _currentResults.length,
+                    itemBuilder: (context, index) {
+                      final result = _currentResults[index];
+                      return _buildTestResultItem(result);
+                    },
                   ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(8),
-                  itemCount: _currentResults.length,
-                  itemBuilder: (context, index) {
-                    final result = _currentResults[index];
-                    return _buildTestResultItem(result);
-                  },
-                ),
           ),
         ],
       ),
     );
   }
-  
+
   Widget _buildStatusChip(String label, int count, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -475,11 +482,11 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
       ),
     );
   }
-  
+
   Widget _buildTestResultItem(TestResult result) {
     IconData statusIcon;
     Color statusColor;
-    
+
     switch (result.status) {
       case TestStatus.passed:
         statusIcon = Icons.check_circle;
@@ -506,7 +513,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
         statusColor = Colors.grey;
         break;
     }
-    
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       elevation: 1,
@@ -550,19 +557,22 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildMetricItem('状态', result.status.toString().split('.').last),
+                      child: _buildMetricItem(
+                          '状态', result.status.toString().split('.').last),
                     ),
                     Expanded(
-                      child: _buildMetricItem('耗时', '${result.duration.inMilliseconds}ms'),
+                      child: _buildMetricItem(
+                          '耗时', '${result.duration.inMilliseconds}ms'),
                     ),
                     Expanded(
-                      child: _buildMetricItem('时间', _formatTime(result.timestamp)),
+                      child:
+                          _buildMetricItem('时间', _formatTime(result.timestamp)),
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 // 错误信息
                 if (result.errorMessage != null) ...[
                   Container(
@@ -593,7 +603,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
                   ),
                   const SizedBox(height: 12),
                 ],
-                
+
                 // 指标信息
                 if (result.metrics.isNotEmpty) ...[
                   const Text(
@@ -604,12 +614,12 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: result.metrics.entries.map((entry) {
-                      return _buildMetricChip(entry.key, entry.value.toString());
+                      return _buildMetricChip(
+                          entry.key, entry.value.toString());
                     }).toList(),
                   ),
                 ],
@@ -620,7 +630,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
       ),
     );
   }
-  
+
   Widget _buildMetricItem(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -643,7 +653,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
       ],
     );
   }
-  
+
   Widget _buildMetricChip(String key, String value) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -661,7 +671,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
       ),
     );
   }
-  
+
   Widget _buildTestLogs() {
     return Container(
       margin: const EdgeInsets.only(
@@ -703,9 +713,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                
                 const Spacer(),
-                
                 IconButton(
                   icon: const Icon(Icons.clear),
                   onPressed: _clearLogs,
@@ -715,34 +723,34 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
               ],
             ),
           ),
-          
+
           // 日志内容
           Expanded(
             child: _testLogs.isEmpty
-              ? const Center(
-                  child: Text(
-                    '暂无日志',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(8),
-                  itemCount: _testLogs.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 1),
-                      child: Text(
-                        _testLogs[index],
-                        style: const TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 11,
+                ? const Center(
+                    child: Text(
+                      '暂无日志',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(8),
+                    itemCount: _testLogs.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 1),
+                        child: Text(
+                          _testLogs[index],
+                          style: const TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 11,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
           ),
-          
+
           // 测试报告摘要
           if (_currentReport != null) ...[
             Container(
@@ -760,7 +768,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
       ),
     );
   }
-  
+
   Widget _buildReportSummary(TestReport report) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -778,17 +786,18 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
             ),
           ],
         ),
-        
         const SizedBox(height: 8),
-        
         Row(
           children: [
             Expanded(
               child: _buildSummaryItem(
                 '成功率',
                 '${report.successRate.toStringAsFixed(1)}%',
-                report.successRate >= 90 ? Colors.green : 
-                report.successRate >= 70 ? Colors.orange : Colors.red,
+                report.successRate >= 90
+                    ? Colors.green
+                    : report.successRate >= 70
+                        ? Colors.orange
+                        : Colors.red,
               ),
             ),
             Expanded(
@@ -800,9 +809,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
             ),
           ],
         ),
-        
         const SizedBox(height: 8),
-        
         Row(
           children: [
             Expanded(
@@ -824,7 +831,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
       ],
     );
   }
-  
+
   Widget _buildSummaryItem(String label, String value, Color color) {
     return Container(
       padding: const EdgeInsets.all(8),
@@ -857,7 +864,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
       ),
     );
   }
-  
+
   Color _getTestTypeColor(TestType type) {
     switch (type) {
       case TestType.unit:
@@ -874,7 +881,7 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
         return Colors.brown;
     }
   }
-  
+
   String _getTestTypeDisplayName(TestType type) {
     switch (type) {
       case TestType.unit:
@@ -891,23 +898,23 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
         return '回归测试';
     }
   }
-  
+
   String _formatTime(DateTime dateTime) {
     return '${dateTime.hour.toString().padLeft(2, '0')}:'
-           '${dateTime.minute.toString().padLeft(2, '0')}:'
-           '${dateTime.second.toString().padLeft(2, '0')}';
+        '${dateTime.minute.toString().padLeft(2, '0')}:'
+        '${dateTime.second.toString().padLeft(2, '0')}';
   }
-  
+
   void _runSelectedSuite() async {
     if (_selectedSuite == null || _isRunning) return;
-    
+
     setState(() {
       _isRunning = true;
       _currentResults = [];
       _currentReport = null;
       _testLogs = [];
     });
-    
+
     try {
       await _testService.runTestSuite(_selectedSuite!);
     } catch (e) {
@@ -921,34 +928,34 @@ class _AutomatedTestViewState extends State<AutomatedTestView> {
       }
     }
   }
-  
+
   void _stopTests() {
     _testService.stopTestSuite();
     setState(() {
       _isRunning = false;
     });
   }
-  
+
   void _clearResults() {
     setState(() {
       _currentResults = [];
       _currentReport = null;
     });
   }
-  
+
   void _clearLogs() {
     setState(() {
       _testLogs = [];
     });
   }
-  
+
   void _exportReport() async {
     if (_currentReport == null) return;
-    
+
     try {
       final reportJson = jsonEncode(_currentReport!.toJson());
       await Clipboard.setData(ClipboardData(text: reportJson));
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('测试报告已复制到剪贴板')),

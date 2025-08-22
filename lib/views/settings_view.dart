@@ -20,20 +20,20 @@ class SettingsView extends StatefulWidget {
 class _SettingsViewState extends State<SettingsView> {
   AirPlaySettings? _currentSettings;
   bool _isInitialized = false;
-  
+
   // UI-only settings (not in settings service)
   String _selectedResolution = '3392×2400 (原生)';
   String _selectedRefreshRate = '144Hz';
   String _selectedDisplayMode = '扩展屏幕';
   bool _performanceMonitor = false;
   final bool _developerMode = false;
-  
+
   @override
   void initState() {
     super.initState();
     _initializeSettings();
   }
-  
+
   Future<void> _initializeSettings() async {
     await settingsService.initialize();
     setState(() {
@@ -41,25 +41,25 @@ class _SettingsViewState extends State<SettingsView> {
       _isInitialized = true;
     });
   }
-  
+
   final List<String> _resolutions = [
     '1920×1080',
-    '2560×1600', 
+    '2560×1600',
     '3392×2400 (原生)',
   ];
-  
+
   final List<String> _refreshRates = [
     '60Hz',
     '90Hz',
     '120Hz',
     '144Hz',
   ];
-  
+
   final List<String> _displayModes = [
     '镜像屏幕',
     '扩展屏幕',
   ];
-  
+
   final List<String> _videoQualities = [
     '低',
     '中',
@@ -67,14 +67,14 @@ class _SettingsViewState extends State<SettingsView> {
     '超高',
     '自动',
   ];
-  
+
   final List<String> _audioQualities = [
     '低',
     '中',
     '高',
     '无损',
   ];
-  
+
   final List<String> _performanceModes = [
     '省电',
     '平衡',
@@ -98,7 +98,7 @@ class _SettingsViewState extends State<SettingsView> {
         ),
       );
     }
-    
+
     return LoadingOverlay(
       isLoading: !_isInitialized,
       message: '正在加载设置...',
@@ -114,365 +114,381 @@ class _SettingsViewState extends State<SettingsView> {
           padding: const EdgeInsets.all(AppConstants.defaultPadding),
           children: AnimationUtils.staggeredList(
             children: [
-          // 显示设置
-          _buildSection(
-            '显示设置',
-            Icons.display_settings,
-            [
-              _buildDropdownTile(
-                '分辨率',
-                _selectedResolution,
-                _resolutions,
-                (value) => setState(() => _selectedResolution = value),
-              ),
-              _buildDropdownTile(
-                '刷新率',
-                _selectedRefreshRate,
-                _refreshRates,
-                (value) => setState(() => _selectedRefreshRate = value),
-              ),
-              _buildDropdownTile(
-                '显示模式',
-                _selectedDisplayMode,
-                _displayModes,
-                (value) => setState(() => _selectedDisplayMode = value),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // 视频设置
-          _buildSection(
-            '视频设置',
-            Icons.video_settings,
-            [
-              _buildDropdownTile(
-                '质量',
-                _getVideoQualityDisplayName(_currentSettings!.videoQuality),
-                _videoQualities,
-                (value) async {
-                  final quality = _getVideoQualityFromDisplayName(value);
-                  await settingsService.updateVideoQuality(quality);
-                  setState(() => _currentSettings = settingsService.currentSettings);
-                },
-              ),
-              _buildSwitchTile(
-                '硬件加速',
-                '使用GPU硬件解码提升性能',
-                _currentSettings!.hardwareAcceleration,
-                (value) async {
-                  final newSettings = _currentSettings!.copyWith(hardwareAcceleration: value);
-                  await settingsService.updateSettings(newSettings);
-                  setState(() => _currentSettings = newSettings);
-                },
-              ),
-              _buildSwitchTile(
-                '低延迟模式',
-                '优化传输延迟，可能增加CPU使用',
-                _currentSettings!.lowLatencyMode,
-                (value) async {
-                  final newSettings = _currentSettings!.copyWith(lowLatencyMode: value);
-                  await settingsService.updateSettings(newSettings);
-                  setState(() => _currentSettings = newSettings);
-                },
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // 音频设置
-          _buildSection(
-            '音频设置',
-            Icons.audio_file,
-            [
-              _buildDropdownTile(
-                '音质',
-                _getAudioQualityDisplayName(_currentSettings!.audioQuality),
-                _audioQualities,
-                (value) async {
-                  final quality = _getAudioQualityFromDisplayName(value);
-                  await settingsService.updateAudioQuality(quality);
-                  setState(() => _currentSettings = settingsService.currentSettings);
-                },
-              ),
-              _buildSwitchTile(
-                '音频增强',
-                '启用高级音频处理和降噪',
-                _currentSettings!.audioEnhancement,
-                (value) async {
-                  final newSettings = _currentSettings!.copyWith(audioEnhancement: value);
-                  await settingsService.updateSettings(newSettings);
-                  setState(() => _currentSettings = newSettings);
-                },
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // 性能设置
-          _buildSection(
-            '性能设置',
-            Icons.speed,
-            [
-              _buildDropdownTile(
-                '性能模式',
-                _getPerformanceModeDisplayName(_currentSettings!.performanceMode),
-                _performanceModes,
-                (value) async {
-                  final mode = _getPerformanceModeFromDisplayName(value);
-                  await settingsService.updatePerformanceMode(mode);
-                  setState(() => _currentSettings = settingsService.currentSettings);
-                },
-              ),
-              _buildSwitchTile(
-                '热限制',
-                '自动降低性能以防止过热',
-                _currentSettings!.thermalThrottling,
-                (value) async {
-                  final newSettings = _currentSettings!.copyWith(thermalThrottling: value);
-                  await settingsService.updateSettings(newSettings);
-                  setState(() => _currentSettings = newSettings);
-                },
-              ),
-              _buildSwitchTile(
-                '后台处理',
-                '允许在后台继续处理视频流',
-                _currentSettings!.backgroundProcessing,
-                (value) async {
-                  final newSettings = _currentSettings!.copyWith(backgroundProcessing: value);
-                  await settingsService.updateSettings(newSettings);
-                  setState(() => _currentSettings = newSettings);
-                },
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // 连接设置
-          _buildSection(
-            '连接设置',
-            Icons.wifi,
-            [
-              _buildTextFieldTile(
-                '设备名称',
-                _currentSettings!.deviceName,
-                (value) async {
-                  final newSettings = _currentSettings!.copyWith(deviceName: value);
-                  await settingsService.updateSettings(newSettings);
-                  setState(() => _currentSettings = newSettings);
-                },
-              ),
-              _buildSwitchTile(
-                '自动连接',
-                '记住已配对设备，后续自动连接',
-                _currentSettings!.autoReconnect,
-                (value) async {
-                  final newSettings = _currentSettings!.copyWith(autoReconnect: value);
-                  await settingsService.updateSettings(newSettings);
-                  setState(() => _currentSettings = newSettings);
-                },
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // 高级设置
-          _buildSection(
-            '高级设置',
-            Icons.build,
-            [
-              _buildSwitchTile(
-                '性能监控',
-                '显示实时帧率、延迟等信息',
-                _performanceMonitor,
-                (value) => setState(() => _performanceMonitor = value),
-              ),
-              _buildSwitchTile(
-                '自适应同步',
-                '自动调整音视频同步参数',
-                _currentSettings!.adaptiveSync,
-                (value) async {
-                  final newSettings = _currentSettings!.copyWith(adaptiveSync: value);
-                  await settingsService.updateSettings(newSettings);
-                  setState(() => _currentSettings = newSettings);
-                },
-              ),
-              _buildSwitchTile(
-                '唇音校正',
-                '启用高级音视频同步校正',
-                _currentSettings!.lipSyncCorrection,
-                (value) async {
-                  final newSettings = _currentSettings!.copyWith(lipSyncCorrection: value);
-                  await settingsService.updateSettings(newSettings);
-                  setState(() => _currentSettings = newSettings);
-                },
-              ),
-              _buildSwitchTile(
-                '调试模式',
-                '显示详细调试信息',
-                _currentSettings!.debugMode,
-                (value) async {
-                  final newSettings = _currentSettings!.copyWith(debugMode: value);
-                  await settingsService.updateSettings(newSettings);
-                  setState(() => _currentSettings = newSettings);
-                },
-              ),
-              _buildSwitchTile(
-                '详细日志',
-                '记录详细调试日志，可能影响性能',
-                _currentSettings!.verboseLogging,
-                (value) async {
-                  final newSettings = _currentSettings!.copyWith(verboseLogging: value);
-                  await settingsService.updateSettings(newSettings);
-                  setState(() => _currentSettings = newSettings);
-                },
-              ),
-              _buildSwitchTile(
-                '遥测数据',
-                '发送匿名性能数据帮助改进应用',
-                _currentSettings!.telemetryEnabled,
-                (value) async {
-                  final newSettings = _currentSettings!.copyWith(telemetryEnabled: value);
-                  await settingsService.updateSettings(newSettings);
-                  setState(() => _currentSettings = newSettings);
-                },
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // 连接测试 (总是显示)
-          _buildSection(
-            '连接测试',
-            Icons.network_check,
-            [
-              _buildActionTile(
-                'AirPlay连接诊断',
-                '全面测试网络、服务和解码器功能',
-                Icons.assessment,
-                _openConnectionTest,
-              ),
-              _buildActionTile(
-                '自动化测试',
-                '运行完整的自动化测试套件',
-                Icons.science,
-                _openAutomatedTest,
-              ),
-              _buildActionTile(
-                'Mac连接指南',
-                '查看Mac设备连接步骤和故障排除',
-                Icons.laptop_mac,
-                _showMacConnectionGuide,
-              ),
-            ],
-          ),
-          
-          // 开发者测试功能 (仅在开发者模式下显示)
-          if (_developerMode) ...[
-            const SizedBox(height: 16),
-            _buildSection(
-              '开发者测试',
-              Icons.science,
-              [
-                _buildTestTile(
-                  '视频解码器测试',
-                  '测试视频解码和渲染功能',
-                  videoTestService.isRunning,
-                  _toggleVideoTest,
-                ),
-                _buildTestTile(
-                  '音频解码器测试',
-                  '播放440Hz+880Hz立体声测试音调',
-                  audioTestService.isRunning,
-                  _toggleAudioTest,
-                ),
-                _buildActionTile(
-                  '清空应用数据',
-                  '重置所有设置和缓存',
-                  Icons.delete_forever,
-                  _clearAppData,
-                ),
-                _buildActionTile(
-                  '导出诊断日志',
-                  '生成完整的系统诊断报告',
-                  Icons.bug_report,
-                  _exportDiagnostics,
-                ),
-                _buildActionTile(
-                  '导出设置',
-                  '导出当前所有设置配置',
-                  Icons.file_download,
-                  _exportSettings,
-                ),
-                _buildActionTile(
-                  '导入设置',
-                  '从文件导入设置配置',
-                  Icons.file_upload,
-                  _importSettings,
-                ),
-                _buildActionTile(
-                  '重置设置',
-                  '恢复到默认设置',
-                  Icons.refresh,
-                  _resetSettings,
-                ),
-              ],
-            ),
-          ],
-          
-          const SizedBox(height: 32),
-          
-          // 关于信息
-          Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppConstants.cardRadius),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '关于PadCast',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+              // 显示设置
+              _buildSection(
+                '显示设置',
+                Icons.display_settings,
+                [
+                  _buildDropdownTile(
+                    '分辨率',
+                    _selectedResolution,
+                    _resolutions,
+                    (value) => setState(() => _selectedResolution = value),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    '版本: ${AppConstants.appVersion}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                  _buildDropdownTile(
+                    '刷新率',
+                    _selectedRefreshRate,
+                    _refreshRates,
+                    (value) => setState(() => _selectedRefreshRate = value),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '专为OPPO Pad 4 Pro优化的AirPlay接收端',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                  _buildDropdownTile(
+                    '显示模式',
+                    _selectedDisplayMode,
+                    _displayModes,
+                    (value) => setState(() => _selectedDisplayMode = value),
                   ),
                 ],
               ),
-            ),
-          ),
+
+              const SizedBox(height: 24),
+
+              // 视频设置
+              _buildSection(
+                '视频设置',
+                Icons.video_settings,
+                [
+                  _buildDropdownTile(
+                    '质量',
+                    _getVideoQualityDisplayName(_currentSettings!.videoQuality),
+                    _videoQualities,
+                    (value) async {
+                      final quality = _getVideoQualityFromDisplayName(value);
+                      await settingsService.updateVideoQuality(quality);
+                      setState(() =>
+                          _currentSettings = settingsService.currentSettings);
+                    },
+                  ),
+                  _buildSwitchTile(
+                    '硬件加速',
+                    '使用GPU硬件解码提升性能',
+                    _currentSettings!.hardwareAcceleration,
+                    (value) async {
+                      final newSettings = _currentSettings!
+                          .copyWith(hardwareAcceleration: value);
+                      await settingsService.updateSettings(newSettings);
+                      setState(() => _currentSettings = newSettings);
+                    },
+                  ),
+                  _buildSwitchTile(
+                    '低延迟模式',
+                    '优化传输延迟，可能增加CPU使用',
+                    _currentSettings!.lowLatencyMode,
+                    (value) async {
+                      final newSettings =
+                          _currentSettings!.copyWith(lowLatencyMode: value);
+                      await settingsService.updateSettings(newSettings);
+                      setState(() => _currentSettings = newSettings);
+                    },
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // 音频设置
+              _buildSection(
+                '音频设置',
+                Icons.audio_file,
+                [
+                  _buildDropdownTile(
+                    '音质',
+                    _getAudioQualityDisplayName(_currentSettings!.audioQuality),
+                    _audioQualities,
+                    (value) async {
+                      final quality = _getAudioQualityFromDisplayName(value);
+                      await settingsService.updateAudioQuality(quality);
+                      setState(() =>
+                          _currentSettings = settingsService.currentSettings);
+                    },
+                  ),
+                  _buildSwitchTile(
+                    '音频增强',
+                    '启用高级音频处理和降噪',
+                    _currentSettings!.audioEnhancement,
+                    (value) async {
+                      final newSettings =
+                          _currentSettings!.copyWith(audioEnhancement: value);
+                      await settingsService.updateSettings(newSettings);
+                      setState(() => _currentSettings = newSettings);
+                    },
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // 性能设置
+              _buildSection(
+                '性能设置',
+                Icons.speed,
+                [
+                  _buildDropdownTile(
+                    '性能模式',
+                    _getPerformanceModeDisplayName(
+                        _currentSettings!.performanceMode),
+                    _performanceModes,
+                    (value) async {
+                      final mode = _getPerformanceModeFromDisplayName(value);
+                      await settingsService.updatePerformanceMode(mode);
+                      setState(() =>
+                          _currentSettings = settingsService.currentSettings);
+                    },
+                  ),
+                  _buildSwitchTile(
+                    '热限制',
+                    '自动降低性能以防止过热',
+                    _currentSettings!.thermalThrottling,
+                    (value) async {
+                      final newSettings =
+                          _currentSettings!.copyWith(thermalThrottling: value);
+                      await settingsService.updateSettings(newSettings);
+                      setState(() => _currentSettings = newSettings);
+                    },
+                  ),
+                  _buildSwitchTile(
+                    '后台处理',
+                    '允许在后台继续处理视频流',
+                    _currentSettings!.backgroundProcessing,
+                    (value) async {
+                      final newSettings = _currentSettings!
+                          .copyWith(backgroundProcessing: value);
+                      await settingsService.updateSettings(newSettings);
+                      setState(() => _currentSettings = newSettings);
+                    },
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // 连接设置
+              _buildSection(
+                '连接设置',
+                Icons.wifi,
+                [
+                  _buildTextFieldTile(
+                    '设备名称',
+                    _currentSettings!.deviceName,
+                    (value) async {
+                      final newSettings =
+                          _currentSettings!.copyWith(deviceName: value);
+                      await settingsService.updateSettings(newSettings);
+                      setState(() => _currentSettings = newSettings);
+                    },
+                  ),
+                  _buildSwitchTile(
+                    '自动连接',
+                    '记住已配对设备，后续自动连接',
+                    _currentSettings!.autoReconnect,
+                    (value) async {
+                      final newSettings =
+                          _currentSettings!.copyWith(autoReconnect: value);
+                      await settingsService.updateSettings(newSettings);
+                      setState(() => _currentSettings = newSettings);
+                    },
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // 高级设置
+              _buildSection(
+                '高级设置',
+                Icons.build,
+                [
+                  _buildSwitchTile(
+                    '性能监控',
+                    '显示实时帧率、延迟等信息',
+                    _performanceMonitor,
+                    (value) => setState(() => _performanceMonitor = value),
+                  ),
+                  _buildSwitchTile(
+                    '自适应同步',
+                    '自动调整音视频同步参数',
+                    _currentSettings!.adaptiveSync,
+                    (value) async {
+                      final newSettings =
+                          _currentSettings!.copyWith(adaptiveSync: value);
+                      await settingsService.updateSettings(newSettings);
+                      setState(() => _currentSettings = newSettings);
+                    },
+                  ),
+                  _buildSwitchTile(
+                    '唇音校正',
+                    '启用高级音视频同步校正',
+                    _currentSettings!.lipSyncCorrection,
+                    (value) async {
+                      final newSettings =
+                          _currentSettings!.copyWith(lipSyncCorrection: value);
+                      await settingsService.updateSettings(newSettings);
+                      setState(() => _currentSettings = newSettings);
+                    },
+                  ),
+                  _buildSwitchTile(
+                    '调试模式',
+                    '显示详细调试信息',
+                    _currentSettings!.debugMode,
+                    (value) async {
+                      final newSettings =
+                          _currentSettings!.copyWith(debugMode: value);
+                      await settingsService.updateSettings(newSettings);
+                      setState(() => _currentSettings = newSettings);
+                    },
+                  ),
+                  _buildSwitchTile(
+                    '详细日志',
+                    '记录详细调试日志，可能影响性能',
+                    _currentSettings!.verboseLogging,
+                    (value) async {
+                      final newSettings =
+                          _currentSettings!.copyWith(verboseLogging: value);
+                      await settingsService.updateSettings(newSettings);
+                      setState(() => _currentSettings = newSettings);
+                    },
+                  ),
+                  _buildSwitchTile(
+                    '遥测数据',
+                    '发送匿名性能数据帮助改进应用',
+                    _currentSettings!.telemetryEnabled,
+                    (value) async {
+                      final newSettings =
+                          _currentSettings!.copyWith(telemetryEnabled: value);
+                      await settingsService.updateSettings(newSettings);
+                      setState(() => _currentSettings = newSettings);
+                    },
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // 连接测试 (总是显示)
+              _buildSection(
+                '连接测试',
+                Icons.network_check,
+                [
+                  _buildActionTile(
+                    'AirPlay连接诊断',
+                    '全面测试网络、服务和解码器功能',
+                    Icons.assessment,
+                    _openConnectionTest,
+                  ),
+                  _buildActionTile(
+                    '自动化测试',
+                    '运行完整的自动化测试套件',
+                    Icons.science,
+                    _openAutomatedTest,
+                  ),
+                  _buildActionTile(
+                    'Mac连接指南',
+                    '查看Mac设备连接步骤和故障排除',
+                    Icons.laptop_mac,
+                    _showMacConnectionGuide,
+                  ),
+                ],
+              ),
+
+              // 开发者测试功能 (仅在开发者模式下显示)
+              if (_developerMode) ...[
+                const SizedBox(height: 16),
+                _buildSection(
+                  '开发者测试',
+                  Icons.science,
+                  [
+                    _buildTestTile(
+                      '视频解码器测试',
+                      '测试视频解码和渲染功能',
+                      videoTestService.isRunning,
+                      _toggleVideoTest,
+                    ),
+                    _buildTestTile(
+                      '音频解码器测试',
+                      '播放440Hz+880Hz立体声测试音调',
+                      audioTestService.isRunning,
+                      _toggleAudioTest,
+                    ),
+                    _buildActionTile(
+                      '清空应用数据',
+                      '重置所有设置和缓存',
+                      Icons.delete_forever,
+                      _clearAppData,
+                    ),
+                    _buildActionTile(
+                      '导出诊断日志',
+                      '生成完整的系统诊断报告',
+                      Icons.bug_report,
+                      _exportDiagnostics,
+                    ),
+                    _buildActionTile(
+                      '导出设置',
+                      '导出当前所有设置配置',
+                      Icons.file_download,
+                      _exportSettings,
+                    ),
+                    _buildActionTile(
+                      '导入设置',
+                      '从文件导入设置配置',
+                      Icons.file_upload,
+                      _importSettings,
+                    ),
+                    _buildActionTile(
+                      '重置设置',
+                      '恢复到默认设置',
+                      Icons.refresh,
+                      _resetSettings,
+                    ),
+                  ],
+                ),
+              ],
+
+              const SizedBox(height: 32),
+
+              // 关于信息
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '关于PadCast',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '版本: ${AppConstants.appVersion}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '专为OPPO Pad 4 Pro优化的AirPlay接收端',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
   }
-  
+
   Widget _buildSection(String title, IconData icon, List<Widget> children) {
     return Card(
       elevation: 2,
@@ -504,7 +520,7 @@ class _SettingsViewState extends State<SettingsView> {
       ),
     );
   }
-  
+
   Widget _buildDropdownTile(
     String title,
     String value,
@@ -527,7 +543,8 @@ class _SettingsViewState extends State<SettingsView> {
             child: DropdownButtonFormField<String>(
               initialValue: value,
               decoration: const InputDecoration(
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 border: OutlineInputBorder(),
                 isDense: true,
               ),
@@ -548,7 +565,7 @@ class _SettingsViewState extends State<SettingsView> {
       ),
     );
   }
-  
+
   Widget _buildSwitchTile(
     String title,
     String subtitle,
@@ -588,7 +605,7 @@ class _SettingsViewState extends State<SettingsView> {
       ),
     );
   }
-  
+
   Widget _buildTextFieldTile(
     String title,
     String value,
@@ -611,7 +628,8 @@ class _SettingsViewState extends State<SettingsView> {
             initialValue: value,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
             onChanged: onChanged,
           ),
@@ -619,7 +637,7 @@ class _SettingsViewState extends State<SettingsView> {
       ),
     );
   }
-  
+
   Widget _buildTestTile(
     String title,
     String subtitle,
@@ -663,7 +681,7 @@ class _SettingsViewState extends State<SettingsView> {
       ),
     );
   }
-  
+
   Widget _buildActionTile(
     String title,
     String subtitle,
@@ -693,7 +711,7 @@ class _SettingsViewState extends State<SettingsView> {
       ),
     );
   }
-  
+
   void _toggleVideoTest() async {
     try {
       if (videoTestService.isRunning) {
@@ -728,7 +746,7 @@ class _SettingsViewState extends State<SettingsView> {
       }
     }
   }
-  
+
   void _toggleAudioTest() async {
     try {
       if (audioTestService.isRunning) {
@@ -762,7 +780,7 @@ class _SettingsViewState extends State<SettingsView> {
       }
     }
   }
-  
+
   void _clearAppData() {
     showDialog(
       context: context,
@@ -790,7 +808,7 @@ class _SettingsViewState extends State<SettingsView> {
       ),
     );
   }
-  
+
   void _exportDiagnostics() {
     ToastNotification.showSuccess(
       context,
@@ -798,7 +816,7 @@ class _SettingsViewState extends State<SettingsView> {
       message: '诊断日志已导出到文件',
     );
   }
-  
+
   void _exportSettings() async {
     try {
       final settingsJson = settingsService.exportSettings();
@@ -821,12 +839,13 @@ class _SettingsViewState extends State<SettingsView> {
       }
     }
   }
-  
+
   void _importSettings() async {
     try {
       final clipboardData = await Clipboard.getData('text/plain');
       if (clipboardData?.text != null) {
-        final success = await settingsService.importSettings(clipboardData!.text!);
+        final success =
+            await settingsService.importSettings(clipboardData!.text!);
         if (success) {
           if (mounted) {
             setState(() {
@@ -854,7 +873,7 @@ class _SettingsViewState extends State<SettingsView> {
       }
     }
   }
-  
+
   void _resetSettings() {
     showDialog(
       context: context,
@@ -876,7 +895,7 @@ class _SettingsViewState extends State<SettingsView> {
                   setState(() {
                     _currentSettings = settingsService.currentSettings;
                   });
-                  
+
                   ToastNotification.showSuccess(
                     // ignore: use_build_context_synchronously
                     context,
@@ -901,7 +920,7 @@ class _SettingsViewState extends State<SettingsView> {
       ),
     );
   }
-  
+
   void _openConnectionTest() {
     Navigator.push(
       context,
@@ -910,18 +929,18 @@ class _SettingsViewState extends State<SettingsView> {
       ),
     );
   }
-  
+
   void _showMacConnectionGuide() {
     showDialog(
       context: context,
       builder: (context) => const MacConnectionGuideDialog(),
     );
   }
-  
+
   void _openAutomatedTest() {
     Navigator.pushNamed(context, '/automatedTest');
   }
-  
+
   String _getVideoQualityDisplayName(VideoQuality quality) {
     switch (quality) {
       case VideoQuality.low:
@@ -936,7 +955,7 @@ class _SettingsViewState extends State<SettingsView> {
         return '自动';
     }
   }
-  
+
   VideoQuality _getVideoQualityFromDisplayName(String displayName) {
     switch (displayName) {
       case '低':
@@ -953,7 +972,7 @@ class _SettingsViewState extends State<SettingsView> {
         return VideoQuality.high;
     }
   }
-  
+
   String _getAudioQualityDisplayName(AudioQuality quality) {
     switch (quality) {
       case AudioQuality.low:
@@ -966,7 +985,7 @@ class _SettingsViewState extends State<SettingsView> {
         return '无损';
     }
   }
-  
+
   AudioQuality _getAudioQualityFromDisplayName(String displayName) {
     switch (displayName) {
       case '低':
@@ -981,7 +1000,7 @@ class _SettingsViewState extends State<SettingsView> {
         return AudioQuality.high;
     }
   }
-  
+
   String _getPerformanceModeDisplayName(PerformanceMode mode) {
     switch (mode) {
       case PerformanceMode.powersave:
@@ -994,7 +1013,7 @@ class _SettingsViewState extends State<SettingsView> {
         return '游戏';
     }
   }
-  
+
   PerformanceMode _getPerformanceModeFromDisplayName(String displayName) {
     switch (displayName) {
       case '省电':

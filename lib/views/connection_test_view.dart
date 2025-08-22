@@ -16,17 +16,17 @@ class ConnectionTestView extends StatefulWidget {
 class _ConnectionTestViewState extends State<ConnectionTestView> {
   List<TestResult> _testResults = [];
   bool _isRunning = false;
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     // 在下一帧设置AirPlay控制器引用
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final airplayController = context.read<AirPlayController>();
       connectionTestService.setAirPlayController(airplayController);
     });
-    
+
     // 监听测试结果更新
     connectionTestService.resultsStream.listen((results) {
       if (mounted) {
@@ -120,8 +120,9 @@ class _ConnectionTestViewState extends State<ConnectionTestView> {
                     if (!_isRunning && _testResults.isEmpty)
                       Consumer<AirPlayController>(
                         builder: (context, airplayController, child) {
-                          final isServiceRunning = airplayController.isServiceRunning;
-                          
+                          final isServiceRunning =
+                              airplayController.isServiceRunning;
+
                           return Column(
                             children: [
                               if (!isServiceRunning) ...[
@@ -134,7 +135,8 @@ class _ConnectionTestViewState extends State<ConnectionTestView> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.green,
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
                                     ),
                                   ),
                                 ),
@@ -143,13 +145,15 @@ class _ConnectionTestViewState extends State<ConnectionTestView> {
                               SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton.icon(
-                                  onPressed: isServiceRunning ? _startTests : null,
+                                  onPressed:
+                                      isServiceRunning ? _startTests : null,
                                   icon: const Icon(Icons.play_arrow),
                                   label: const Text('开始测试'),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.blue,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
                                   ),
                                 ),
                               ),
@@ -162,13 +166,14 @@ class _ConnectionTestViewState extends State<ConnectionTestView> {
               ),
             ),
           ),
-          
+
           // 测试结果列表
           Expanded(
             child: _testResults.isEmpty
                 ? _buildEmptyState()
                 : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.defaultPadding),
                     itemCount: _testResults.length,
                     itemBuilder: (context, index) {
                       return _buildTestResultCard(_testResults[index]);
@@ -188,7 +193,7 @@ class _ConnectionTestViewState extends State<ConnectionTestView> {
           : null,
     );
   }
-  
+
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -219,7 +224,7 @@ class _ConnectionTestViewState extends State<ConnectionTestView> {
       ),
     );
   }
-  
+
   Widget _buildTestResultCard(TestResult result) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -229,7 +234,8 @@ class _ConnectionTestViewState extends State<ConnectionTestView> {
           borderRadius: BorderRadius.circular(8),
         ),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           leading: _buildStatusIcon(result.status),
           title: Text(
             result.name,
@@ -274,7 +280,7 @@ class _ConnectionTestViewState extends State<ConnectionTestView> {
       ),
     );
   }
-  
+
   Widget _buildStatusIcon(TestStatus status) {
     switch (status) {
       case TestStatus.pending:
@@ -291,7 +297,7 @@ class _ConnectionTestViewState extends State<ConnectionTestView> {
         return const Icon(Icons.error, color: Colors.red, size: 28);
     }
   }
-  
+
   Color _getStatusColor(TestStatus status) {
     switch (status) {
       case TestStatus.pending:
@@ -304,34 +310,40 @@ class _ConnectionTestViewState extends State<ConnectionTestView> {
         return Colors.red;
     }
   }
-  
+
   String _getOverviewText() {
     final airplayController = context.watch<AirPlayController>();
     final isServiceRunning = airplayController.isServiceRunning;
-    
+
     if (_testResults.isEmpty) {
-      final serviceStatus = isServiceRunning ? '✓ AirPlay服务运行中' : '⚠ AirPlay服务未启动';
+      final serviceStatus =
+          isServiceRunning ? '✓ AirPlay服务运行中' : '⚠ AirPlay服务未启动';
       return '准备进行全面的AirPlay连接测试，包括网络、服务和解码器检测\n$serviceStatus';
     }
-    
-    final passed = _testResults.where((r) => r.status == TestStatus.passed).length;
-    final failed = _testResults.where((r) => r.status == TestStatus.failed).length;
-    final running = _testResults.where((r) => r.status == TestStatus.running).length;
-    final pending = _testResults.where((r) => r.status == TestStatus.pending).length;
-    
+
+    final passed =
+        _testResults.where((r) => r.status == TestStatus.passed).length;
+    final failed =
+        _testResults.where((r) => r.status == TestStatus.failed).length;
+    final running =
+        _testResults.where((r) => r.status == TestStatus.running).length;
+    final pending =
+        _testResults.where((r) => r.status == TestStatus.pending).length;
+
     if (_isRunning) {
       return '正在进行测试... ($passed通过, $failed失败, $running进行中, $pending待测试)';
     } else {
       return '测试完成: $passed项通过, $failed项失败';
     }
   }
-  
+
   void _startTests() async {
     try {
       await connectionTestService.runConnectionTests();
-      
+
       if (mounted) {
-        final failed = _testResults.where((r) => r.status == TestStatus.failed).length;
+        final failed =
+            _testResults.where((r) => r.status == TestStatus.failed).length;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -353,14 +365,14 @@ class _ConnectionTestViewState extends State<ConnectionTestView> {
       }
     }
   }
-  
+
   void _clearResults() {
     connectionTestService.clearResults();
     setState(() {
       _testResults = [];
     });
   }
-  
+
   void _cancelTests() {
     connectionTestService.cancelTests();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -370,12 +382,12 @@ class _ConnectionTestViewState extends State<ConnectionTestView> {
       ),
     );
   }
-  
+
   void _startAirPlayService() async {
     try {
       final airplayController = context.read<AirPlayController>();
       await airplayController.startAirPlayService();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -397,10 +409,10 @@ class _ConnectionTestViewState extends State<ConnectionTestView> {
       }
     }
   }
-  
+
   void _showTestSummary() {
     final summary = connectionTestService.getTestSummary();
-    
+
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -459,10 +471,10 @@ class _ConnectionTestViewState extends State<ConnectionTestView> {
                         // Copy summary to clipboard
                         final nav = Navigator.of(context);
                         final messenger = ScaffoldMessenger.of(context);
-                        
+
                         await Clipboard.setData(ClipboardData(text: summary));
                         if (!mounted) return;
-                        
+
                         nav.pop();
                         messenger.showSnackBar(
                           const SnackBar(
@@ -498,7 +510,7 @@ class _ConnectionTestViewState extends State<ConnectionTestView> {
       ),
     );
   }
-  
+
   void _showMacConnectionGuide() {
     showDialog(
       context: context,

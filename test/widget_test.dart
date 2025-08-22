@@ -13,7 +13,7 @@ void main() {
   testWidgets('PadCast app smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const PadCastApp());
-    
+
     // Pump once more to let the initial frame render
     await tester.pump();
 

@@ -8,7 +8,7 @@ class ControlButtonsWidget extends StatelessWidget {
   final bool isServiceStopping;
   final AirPlayConnectionState connectionState;
   final VoidCallback onToggleService;
-  
+
   const ControlButtonsWidget({
     super.key,
     required this.isServiceRunning,
@@ -26,7 +26,9 @@ class ControlButtonsWidget extends StatelessWidget {
         // 开启/关闭接收按钮
         Expanded(
           child: ElevatedButton.icon(
-            onPressed: (isServiceStarting || isServiceStopping) ? null : onToggleService,
+            onPressed: (isServiceStarting || isServiceStopping)
+                ? null
+                : onToggleService,
             icon: _buildButtonIcon(),
             label: Text(
               _getButtonText(),
@@ -46,9 +48,9 @@ class ControlButtonsWidget extends StatelessWidget {
             ),
           ),
         ),
-        
+
         const SizedBox(width: 16),
-        
+
         // 设置按钮
         Expanded(
           child: OutlinedButton.icon(
@@ -78,7 +80,7 @@ class ControlButtonsWidget extends StatelessWidget {
       ],
     );
   }
-  
+
   Widget _buildButtonIcon() {
     if (isServiceStarting || isServiceStopping) {
       return const SizedBox(
@@ -90,13 +92,13 @@ class ControlButtonsWidget extends StatelessWidget {
         ),
       );
     }
-    
+
     return Icon(
       isServiceRunning ? Icons.stop : Icons.play_arrow,
       size: 24,
     );
   }
-  
+
   String _getButtonText() {
     if (isServiceStarting) {
       return '启动中...';
@@ -108,7 +110,7 @@ class ControlButtonsWidget extends StatelessWidget {
       return '开启接收';
     }
   }
-  
+
   Color _getButtonColor() {
     if (isServiceStarting || isServiceStopping) {
       return Colors.grey[600]!;

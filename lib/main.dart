@@ -28,10 +28,10 @@ class PadCastApp extends StatelessWidget {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           useMaterial3: true,
-          
+
           // 针对平板优化的主题
           visualDensity: VisualDensity.adaptivePlatformDensity,
-          
+
           // 卡片主题
           cardTheme: CardThemeData(
             elevation: 2,
@@ -39,7 +39,7 @@ class PadCastApp extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppConstants.cardRadius),
             ),
           ),
-          
+
           // 按钮主题
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
@@ -49,7 +49,7 @@ class PadCastApp extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // AppBar主题
           appBarTheme: const AppBarTheme(
             backgroundColor: Colors.white,
@@ -58,7 +58,7 @@ class PadCastApp extends StatelessWidget {
             centerTitle: false,
           ),
         ),
-        
+
         // 路由配置
         routes: {
           '/': (context) => const HomeView(),
@@ -68,7 +68,7 @@ class PadCastApp extends StatelessWidget {
           '/connectionTest': (context) => const ConnectionTestView(),
           '/automatedTest': (context) => const AutomatedTestView(),
         },
-        
+
         initialRoute: '/',
       ),
     );
