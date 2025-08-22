@@ -19,7 +19,10 @@
     <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
   </a>
   <a href="https://github.com/cairui/padcast/releases">
-    <img src="https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square" alt="Version">
+    <img src="https://img.shields.io/badge/Version-v1.0.0-brightgreen?style=flat-square" alt="Version">
+  </a>
+  <a href="https://github.com/cairui/padcast/releases/latest">
+    <img src="https://img.shields.io/badge/Status-Released-success?style=flat-square" alt="Status">
   </a>
 </p>
 
@@ -52,8 +55,14 @@
 
 #### 方式一: 下载 APK (推荐)
 1. 前往 [Releases](https://github.com/cairui/padcast/releases) 页面
-2. 下载最新版本的 `padcast-v1.0.0.apk`
+2. 下载最新版本的 `app-release.apk` (v1.0.0, 51.2MB)
 3. 在 OPPO Pad 上安装 APK 文件
+4. 首次运行需要授予网络访问权限
+
+**最新发布**: v1.0.0 (2025-08-22)
+- ✅ 已通过全面测试和质量检查
+- ✅ 支持Android 8.0+
+- ✅ 优化了OPPO Pad性能表现
 
 #### 方式二: 从源码构建
 ```bash
@@ -166,6 +175,12 @@ flutter test integration_test/
 - **性能测试**: 音视频同步和网络性能测试
 - **回归测试**: 确保新功能不破坏现有功能
 
+**v1.0.0 测试状态**:
+- ✅ Flutter analyze: 0 issues
+- ✅ Flutter test: 所有测试通过
+- ✅ 自动化测试框架: 完整覆盖
+- ✅ 性能基准测试: 达标
+
 ## 🤝 贡献指南
 
 我们欢迎各种形式的贡献！请查看 [CONTRIBUTING.md](CONTRIBUTING.md) 了解详细信息。
@@ -211,5 +226,19 @@ flutter test integration_test/
 ---
 
 <p align="center">
-  使用 ❤️ 和 Flutter 制作 | © 2024 PadCast Team
+  使用 ❤️ 和 Flutter 制作 | © 2025 PadCast Team
 </p>
+
+---
+
+## 🏷️ 版本历史
+
+### v1.0.0 (2025-08-22) - 首次发布
+- 🎉 完整的AirPlay接收功能
+- 🎵 高精度音视频同步
+- ⚡ 性能监控和优化
+- 🧪 自动化测试框架
+- 📱 OPPO Pad优化界面
+- 🛠️ 完善的设置和调试工具
+
+[查看完整更新日志](CHANGELOG.md)
