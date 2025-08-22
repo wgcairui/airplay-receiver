@@ -270,7 +270,21 @@ class AirPlayService {
 
     // 处理播放请求
     router.post('/play', (shelf.Request request) async {
-      Log.i('AirPlayService', '收到play请求');
+      final clientIP = request.headers['x-forwarded-for'] ??
+          request.headers['x-real-ip'] ??
+          request.headers['host']?.split(':').first ??
+          'Unknown';
+      
+      Log.i('AirPlayService', '收到play请求，客户端IP: $clientIP');
+      
+      // 切换到streaming状态，触发UI跳转到视频页面
+      _updateState(_currentState.copyWith(
+        status: ConnectionStatus.streaming,
+        connectedDeviceIP: clientIP,
+        connectedDeviceName: 'Mac设备',
+      ));
+      
+      Log.i('AirPlayService', '已切换到streaming状态，UI应该跳转到视频页面');
       
       final response = {'status': 0};
       return shelf.Response.ok(
@@ -334,7 +348,19 @@ class AirPlayService {
 
     // 处理AirPlay连接设置
     router.post('/setup', (shelf.Request request) async {
-      Log.i('AirPlayService', '收到setup请求');
+      final clientIP = request.headers['x-forwarded-for'] ??
+          request.headers['x-real-ip'] ??
+          request.headers['host']?.split(':').first ??
+          'Unknown';
+      
+      Log.i('AirPlayService', '收到setup请求，客户端IP: $clientIP');
+      
+      // 更新连接状态为已连接，准备接收流媒体
+      _updateState(_currentState.copyWith(
+        status: ConnectionStatus.connected,
+        connectedDeviceIP: clientIP,
+        connectedDeviceName: 'Mac设备',
+      ));
       
       final response = {
         'status': 0,
@@ -376,7 +402,20 @@ class AirPlayService {
 
     // 处理反向HTTP连接（Mac镜像显示需要）
     router.post('/reverse', (shelf.Request request) async {
-      Log.i('AirPlayService', '收到reverse HTTP连接请求');
+      final clientIP = request.headers['x-forwarded-for'] ??
+          request.headers['x-real-ip'] ??
+          request.headers['host']?.split(':').first ??
+          'Unknown';
+      
+      Log.i('AirPlayService', '收到reverse HTTP连接请求，客户端IP: $clientIP');
+      Log.i('AirPlayService', 'Mac设备正在建立镜像连接，准备开始streaming');
+      
+      // Mac镜像连接通常意味着即将开始streaming
+      _updateState(_currentState.copyWith(
+        status: ConnectionStatus.streaming,
+        connectedDeviceIP: clientIP,
+        connectedDeviceName: 'Mac设备',
+      ));
       
       final response = {
         'status': 0,
