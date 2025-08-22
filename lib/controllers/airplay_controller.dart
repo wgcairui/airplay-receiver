@@ -45,12 +45,14 @@ class AirPlayController extends ChangeNotifier {
   Future<void> startAirPlayService() async {
     if (_isServiceRunning) return;
 
+    print('AirPlayController: 开始启动AirPlay服务...');
     try {
       await _airplayService.startService();
       _isServiceRunning = true;
+      print('AirPlayController: AirPlay服务启动成功，HTTP端口7000，RTSP端口7001');
       notifyListeners();
     } catch (e) {
-      print('启动AirPlay服务失败: $e');
+      print('AirPlayController: 启动AirPlay服务失败: $e');
       rethrow;
     }
   }
@@ -69,8 +71,11 @@ class AirPlayController extends ChangeNotifier {
   }
 
   Future<void> toggleService() async {
+    print('AirPlayController: toggleService 被调用，当前状态: $_isServiceRunning');
+    
     // 防止在启动或停止过程中重复操作
     if (_airplayService.isStarting || _airplayService.isStopping) {
+      print('AirPlayController: 服务正在启动/停止中，跳过操作');
       return;
     }
 
