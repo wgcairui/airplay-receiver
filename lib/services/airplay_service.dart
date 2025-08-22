@@ -272,14 +272,6 @@ class AirPlayService {
     router.post('/play', (shelf.Request request) async {
       Log.i('AirPlayService', '收到play请求');
       
-      // 切换到streaming状态，触发UI跳转到视频页面
-      _updateState(_currentState.copyWith(
-        status: ConnectionStatus.streaming,
-        connectedDeviceName: 'Mac设备',
-      ));
-      
-      Log.i('AirPlayService', '已切换到streaming状态，UI应该跳转到视频页面');
-      
       final response = {'status': 0};
       return shelf.Response.ok(
         jsonEncode(response),
@@ -343,12 +335,6 @@ class AirPlayService {
     // 处理AirPlay连接设置
     router.post('/setup', (shelf.Request request) async {
       Log.i('AirPlayService', '收到setup请求');
-      
-      // 更新连接状态为已连接，准备接收流媒体
-      _updateState(_currentState.copyWith(
-        status: ConnectionStatus.connected,
-        connectedDeviceName: 'Mac设备',
-      ));
       
       final response = {
         'status': 0,
