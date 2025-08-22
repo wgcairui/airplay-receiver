@@ -49,7 +49,7 @@ class AirPlayController extends ChangeNotifier {
     try {
       await _airplayService.startService();
       _isServiceRunning = true;
-      print('AirPlayController: AirPlay服务启动成功，HTTP端口7000，RTSP端口7001');
+      print('AirPlayController: AirPlay服务启动成功，HTTP端口7100，RTSP端口7101');
       notifyListeners();
     } catch (e) {
       print('AirPlayController: 启动AirPlay服务失败: $e');
