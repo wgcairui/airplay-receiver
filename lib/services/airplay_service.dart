@@ -205,10 +205,10 @@ class AirPlayService {
       final deviceInfo = {
         'name': AppConstants.deviceName,
         'model': 'OPPO,Pad4Pro',
-        'srcvers': '366.0', // 与mDNS保持一致
+        'srcvers': '377.20.1', // 更新到较新版本，提高兼容性
         'pi': piId,
         'vv': 2,
-        'features': '0x5A7FFFF7,0x1E',
+        'features': '0x5A7FFFF7,0x1E', // 完整的AirPlay功能支持
         'flags': '0x244', // 与mDNS保持一致
         'statusflags': '0x44',
         'deviceid': deviceId,
@@ -220,6 +220,13 @@ class AirPlayService {
         'sv': 'false', // 不是Apple设备
         'pk': _generatePublicKey(), // 伪造的公钥
         'txtvers': '1',
+        // 添加Mac兼容性关键字段
+        'acl': '0', // 访问控制列表
+        'btaddr': '00:00:00:00:00:00', // 蓝牙地址（伪造）
+        'gcgl': '1', // Game Center
+        'gid': '00000000-0000-0000-0000-000000000000', // 游戏ID
+        'igl': '1', // iCloud游戏库
+        'psi': '00000000-0000-0000-0000-000000000000', // 程序会话ID
       };
 
       return shelf.Response.ok(
@@ -306,6 +313,64 @@ class AirPlayService {
       return shelf.Response.ok(
         jsonEncode(response),
         headers: {'Content-Type': 'application/json'},
+      );
+    });
+
+    // 处理AirPlay 2.0的关键端点
+    router.post('/fp-setup', (shelf.Request request) async {
+      Log.i('AirPlayService', '收到fp-setup请求 (FairPlay DRM设置)');
+      
+      // 跳过FairPlay DRM，返回成功
+      final response = {
+        'status': 0,
+        'type': 'no-fairplay'
+      };
+      
+      return shelf.Response.ok(
+        jsonEncode(response),
+        headers: {'Content-Type': 'application/json'},
+      );
+    });
+
+    // 处理AirPlay连接设置
+    router.post('/setup', (shelf.Request request) async {
+      Log.i('AirPlayService', '收到setup请求');
+      
+      final response = {
+        'status': 0,
+        'sessionUUID': '12345678-1234-1234-1234-123456789ABC'
+      };
+      
+      return shelf.Response.ok(
+        jsonEncode(response),
+        headers: {'Content-Type': 'application/json'},
+      );
+    });
+
+    // 处理拆除连接
+    router.post('/teardown', (shelf.Request request) async {
+      Log.i('AirPlayService', '收到teardown请求');
+      
+      _updateState(_currentState.copyWith(status: ConnectionStatus.disconnected));
+      
+      final response = {'status': 0};
+      return shelf.Response.ok(
+        jsonEncode(response),
+        headers: {'Content-Type': 'application/json'},
+      );
+    });
+
+    // 处理OPTIONS请求（用于CORS预检）
+    router.options('/<path|.*>', (shelf.Request request, String path) async {
+      Log.d('AirPlayService', '收到OPTIONS预检请求: /$path');
+      return shelf.Response.ok(
+        '',
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Apple-*',
+          'Access-Control-Max-Age': '86400',
+        },
       );
     });
 

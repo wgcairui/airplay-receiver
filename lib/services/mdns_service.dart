@@ -183,7 +183,7 @@ class MdnsService {
     return {
       // AirPlay版本和功能
       'txtvers': '1',
-      'srcvers': '366.0', // 更新到较新版本
+      'srcvers': '377.20.1', // 与HTTP /info端点保持一致
       'features': '0x5A7FFFF7,0x1E', // 支持视频+音频流
 
       // 设备信息
@@ -203,7 +203,7 @@ class MdnsService {
       // 音频编码支持
       'am': 'OPPO,Pad4Pro',
       'tp': 'UDP',
-      'vs': '366.0',
+      'vs': '377.20.1',
       'sm': '0',
 
       // 其他AirPlay参数
@@ -215,10 +215,16 @@ class MdnsService {
       'ss': '16', // 采样深度
       'sr': '44100,48000', // 采样率
 
-      // 额外的兼容性参数
-      'pk': '0123456789abcdef0123456789abcdef01234567',
+      // Mac兼容性关键参数
+      'pk': _generatePublicKey(),
       'vn': '65537',
       'ov': '16.0.0', // 模拟的系统版本
+      'osvers': '16.0.0', // 操作系统版本
+      'btaddr': '00:00:00:00:00:00', // 蓝牙地址
+      'gcgl': '1', // Game Center
+      'gid': '00000000-0000-0000-0000-000000000000',
+      'igl': '1',
+      'acl': '0',
     };
   }
 
@@ -235,6 +241,13 @@ class MdnsService {
     final random =
         (_localIP?.hashCode ?? 0).abs().toRadixString(16).padLeft(8, '0');
     return '${timestamp.substring(0, 8)}-${random.substring(0, 4)}-4000-8000-${timestamp.substring(8)}${random.substring(4)}';
+  }
+
+  String _generatePublicKey() {
+    // 生成伪造的Ed25519公钥（32字节，Base64编码）
+    // 与AirPlay服务保持一致
+    const fakeKey = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+    return fakeKey;
   }
 
   Future<String?> _getLocalIP() async {
