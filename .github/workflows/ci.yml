@@ -1,0 +1,289 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  release:
+    types: [ published ]
+
+jobs:
+  analyze:
+    name: 代码分析
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 设置Flutter环境
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: 'stable'
+          cache: true
+          
+      - name: 获取依赖
+        run: flutter pub get
+        
+      - name: 验证格式
+        run: dart format --output=none --set-exit-if-changed .
+        
+      - name: 静态分析
+        run: flutter analyze --fatal-infos
+
+  test:
+    name: 单元测试
+    runs-on: ubuntu-latest
+    needs: analyze
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 设置Flutter环境
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: 'stable'
+          cache: true
+          
+      - name: 获取依赖
+        run: flutter pub get
+        
+      - name: 运行测试
+        run: flutter test --coverage
+        
+      - name: 上传覆盖率报告
+        uses: codecov/codecov-action@v4
+        if: success()
+        with:
+          file: coverage/lcov.info
+          fail_ci_if_error: false
+
+  integration_test:
+    name: 集成测试
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 设置Flutter环境
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: 'stable'
+          cache: true
+          
+      - name: 获取依赖
+        run: flutter pub get
+        
+      - name: 启用KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udev adm --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          
+      - name: 设置Android模拟器
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 31
+          target: google_apis
+          arch: x86_64
+          profile: pixel_tablet
+          script: flutter test integration_test/
+          
+  build_android:
+    name: 构建Android APK
+    runs-on: ubuntu-latest
+    needs: [analyze, test]
+    if: github.event_name == 'push' || github.event_name == 'release'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 设置Flutter环境
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: 'stable'
+          cache: true
+          
+      - name: 获取依赖
+        run: flutter pub get
+        
+      - name: 构建APK (Debug)
+        if: github.event_name == 'push'
+        run: flutter build apk --debug --split-per-abi
+        
+      - name: 构建APK (Release)
+        if: github.event_name == 'release'
+        run: flutter build apk --release --split-per-abi
+        
+      - name: 构建App Bundle (Release)
+        if: github.event_name == 'release'
+        run: flutter build appbundle --release
+        
+      - name: 上传APK构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: |
+            build/app/outputs/flutter-apk/*.apk
+            build/app/outputs/bundle/release/*.aab
+          retention-days: 30
+          
+      - name: 上传Release资产
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+          asset_name: padcast-v${{ github.event.release.tag_name }}-arm64-v8a.apk
+          asset_content_type: application/vnd.android.package-archive
+
+  build_web:
+    name: 构建Web应用
+    runs-on: ubuntu-latest
+    needs: [analyze, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 设置Flutter环境
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: 'stable'
+          cache: true
+          
+      - name: 获取依赖
+        run: flutter pub get
+        
+      - name: 构建Web应用
+        run: flutter build web --release --web-renderer html
+        
+      - name: 上传Web构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/web/
+          retention-days: 30
+          
+      - name: 部署到GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: build/web
+          cname: padcast.github.io
+
+  security_scan:
+    name: 安全扫描
+    runs-on: ubuntu-latest
+    needs: analyze
+    if: github.event_name == 'push'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 运行Trivy漏洞扫描
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          
+      - name: 上传扫描结果到GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  performance_test:
+    name: 性能测试
+    runs-on: ubuntu-latest
+    needs: build_android
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 设置Flutter环境
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: 'stable'
+          cache: true
+          
+      - name: 获取依赖
+        run: flutter pub get
+        
+      - name: 运行性能测试
+        run: |
+          flutter test test/performance/
+          
+      - name: 生成性能报告
+        run: |
+          echo "## 性能测试报告" > performance_report.md
+          echo "构建时间: $(date)" >> performance_report.md
+          echo "APK大小: $(ls -lh build/app/outputs/flutter-apk/app-release.apk | awk '{print $5}')" >> performance_report.md
+          
+      - name: 上传性能报告
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: performance_report.md
+
+  documentation:
+    name: 文档生成
+    runs-on: ubuntu-latest
+    needs: analyze
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 设置Flutter环境
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: 'stable'
+          cache: true
+          
+      - name: 获取依赖
+        run: flutter pub get
+        
+      - name: 生成API文档
+        run: |
+          dart doc --output docs/api
+          
+      - name: 上传文档
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-documentation
+          path: docs/
+
+  notify:
+    name: 通知
+    runs-on: ubuntu-latest
+    needs: [build_android, build_web]
+    if: always() && github.event_name == 'release'
+    
+    steps:
+      - name: 发送构建状态通知
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          text: |
+            PadCast Release ${{ github.event.release.tag_name }} 
+            构建状态: ${{ job.status }}
+            下载地址: ${{ github.event.release.html_url }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

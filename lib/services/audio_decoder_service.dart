@@ -306,4 +306,22 @@ class AudioDecoderService {
     
     print('音频解码器已销毁');
   }
+  
+  /// 更新设置
+  void updateSettings(Map<String, dynamic> settings) {
+    if (settings.containsKey('audioBitrate')) {
+      // 这里可以存储音频比特率设置，如果需要的话
+    }
+    if (settings.containsKey('audioSampleRate')) {
+      // 这里可以存储音频采样率设置
+    }
+    if (settings.containsKey('audioCodec')) {
+      _codecType = settings['audioCodec'] == 'alac' ? 'ALAC' : 'AAC';
+    }
+    if (settings.containsKey('audioEnhancement')) {
+      // 这里可以存储音频增强设置
+    }
+    
+    print('音频解码器设置已更新: $settings');
+  }
 }

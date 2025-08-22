@@ -20,6 +20,7 @@ class AirPlayController extends ChangeNotifier {
   
   bool _isServiceRunning = false;
   bool get isServiceRunning => _isServiceRunning;
+  AirPlayService get airplayService => _airplayService;
   
   AirPlayController() {
     _airplayService.stateStream.listen((state) {
@@ -66,6 +67,11 @@ class AirPlayController extends ChangeNotifier {
   }
   
   Future<void> toggleService() async {
+    // 防止在启动或停止过程中重复操作
+    if (_airplayService.isStarting || _airplayService.isStopping) {
+      return;
+    }
+    
     if (_isServiceRunning) {
       await stopAirPlayService();
     } else {
@@ -75,7 +81,10 @@ class AirPlayController extends ChangeNotifier {
   
   @override
   void dispose() {
-    _airplayService.dispose();
+    // 异步清理服务，但不等待完成以避免阻塞dispose
+    _airplayService.dispose().catchError((e) {
+      print('清理AirPlay服务时出错: $e');
+    });
     super.dispose();
   }
 }

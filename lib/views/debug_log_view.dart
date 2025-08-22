@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/logger_service.dart';
-import '../constants/app_constants.dart';
 
 class DebugLogView extends StatefulWidget {
   const DebugLogView({super.key});
@@ -110,6 +109,7 @@ class _DebugLogViewState extends State<DebugLogView> {
                 // 日志级别过滤
                 Expanded(
                   child: DropdownButtonFormField<LogLevel?>(
+                    // ignore: deprecated_member_use
                     value: _filterLevel,
                     decoration: const InputDecoration(
                       labelText: '日志级别',
@@ -152,6 +152,7 @@ class _DebugLogViewState extends State<DebugLogView> {
                 // 模块过滤
                 Expanded(
                   child: DropdownButtonFormField<String?>(
+                    // ignore: deprecated_member_use
                     value: _filterModule,
                     decoration: const InputDecoration(
                       labelText: '模块',

@@ -87,6 +87,18 @@ class PerformanceOptimizationService {
   final List<double> _fpsHistory = [];
   final List<double> _cpuHistory = [];
   
+  // 防抖和限流控制
+  DateTime _lastOptimizationTime = DateTime.now();
+  int _consecutiveAdjustments = 0;
+  static const Duration _minOptimizationInterval = Duration(seconds: 5);
+  static const int _maxConsecutiveAdjustments = 3;
+  
+  // 防止循环优化的控制
+  DateTime _lastMemoryOptimization = DateTime.now();
+  DateTime _lastCpuOptimization = DateTime.now();
+  DateTime _lastLatencyOptimization = DateTime.now();
+  static const Duration _minSameTypeOptimizationInterval = Duration(seconds: 10);
+  
   bool get isOptimizing => _isOptimizing;
   OptimizationLevel get currentLevel => _currentLevel;
   OptimizationProfile get currentProfile => _currentProfile;
@@ -104,6 +116,14 @@ class PerformanceOptimizationService {
     
     _currentLevel = level;
     _isOptimizing = true;
+    
+    // 重置优化状态
+    _consecutiveAdjustments = 0;
+    final now = DateTime.now();
+    _lastOptimizationTime = now;
+    _lastMemoryOptimization = now;
+    _lastCpuOptimization = now;
+    _lastLatencyOptimization = now;
     
     // 应用初始配置文件
     _applyOptimizationProfile(_getProfileForLevel(level));
@@ -165,21 +185,42 @@ class PerformanceOptimizationService {
   }
   
   void _autoOptimize(PerformanceMetrics metrics) {
+    final now = DateTime.now();
+    
+    // 防止过于频繁的调整
+    if (_consecutiveAdjustments >= _maxConsecutiveAdjustments) {
+      // 如果连续调整次数过多，暂停一段时间
+      if (now.difference(_lastOptimizationTime) > Duration(minutes: 1)) {
+        _consecutiveAdjustments = 0; // 重置计数器
+        print('重置优化计数器，恢复优化功能');
+      } else {
+        return; // 暂停优化
+      }
+    }
+    
     // CPU使用率过高
     if (metrics.cpuUsagePercent > _currentProfile.cpuThreshold) {
-      if (_currentProfile != OptimizationProfile.batterySaver) {
+      if (_currentProfile != OptimizationProfile.batterySaver &&
+          now.difference(_lastCpuOptimization) > _minSameTypeOptimizationInterval) {
         _adjustForHighCpuUsage();
+        _lastCpuOptimization = now;
       }
     }
     
     // 内存使用过高
     if (metrics.memoryUsageMB > _currentProfile.memoryThreshold) {
-      _adjustForHighMemoryUsage();
+      if (now.difference(_lastMemoryOptimization) > _minSameTypeOptimizationInterval) {
+        _adjustForHighMemoryUsage();
+        _lastMemoryOptimization = now;
+      }
     }
     
     // 延迟过高
     if (metrics.latencyMs > _latencyTarget * 1.5) {
-      _adjustForHighLatency();
+      if (now.difference(_lastLatencyOptimization) > _minSameTypeOptimizationInterval) {
+        _adjustForHighLatency();
+        _lastLatencyOptimization = now;
+      }
     }
     
     // 帧率过低
@@ -190,6 +231,7 @@ class PerformanceOptimizationService {
   
   void _adjustForHighCpuUsage() {
     print('CPU使用率过高，降低视频质量');
+    _consecutiveAdjustments++;
     
     // 降低帧率
     final newMaxFPS = (_currentProfile.maxFPS * 0.8).round().clamp(15, 60);
@@ -198,7 +240,7 @@ class PerformanceOptimizationService {
     final newBufferSize = (_currentProfile.bufferSize * 1.2).round().clamp(3, 10);
     
     _currentProfile = OptimizationProfile(
-      name: '${_currentProfile.name} (CPU优化)',
+      name: 'CPU优化模式', // 使用固定名称，避免累积
       maxFPS: newMaxFPS,
       bufferSize: newBufferSize,
       lowLatencyMode: _currentProfile.lowLatencyMode,
@@ -213,12 +255,13 @@ class PerformanceOptimizationService {
   
   void _adjustForHighMemoryUsage() {
     print('内存使用过高，优化内存分配');
+    _consecutiveAdjustments++;
     
     // 减少缓冲区大小
     final newBufferSize = (_currentProfile.bufferSize * 0.7).round().clamp(2, 10);
     
     _currentProfile = OptimizationProfile(
-      name: '${_currentProfile.name} (内存优化)',
+      name: '内存优化模式', // 使用固定名称，避免累积
       maxFPS: _currentProfile.maxFPS,
       bufferSize: newBufferSize,
       lowLatencyMode: _currentProfile.lowLatencyMode,
@@ -229,17 +272,21 @@ class PerformanceOptimizationService {
     );
     
     _applyOptimizationProfile(_currentProfile);
+    
+    // 主动触发垃圾回收
+    _triggerGarbageCollection();
   }
   
   void _adjustForHighLatency() {
     print('延迟过高，启用低延迟模式');
+    _consecutiveAdjustments++;
     
     // 启用低延迟模式
     // 减少缓冲区
     final newBufferSize = 2;
     
     _currentProfile = OptimizationProfile(
-      name: '${_currentProfile.name} (低延迟)',
+      name: '低延迟模式', // 使用固定名称，避免累积
       maxFPS: _currentProfile.maxFPS,
       bufferSize: newBufferSize,
       lowLatencyMode: true,
@@ -253,12 +300,23 @@ class PerformanceOptimizationService {
   }
   
   void _adjustForLowFrameRate() {
-    print('帧率过低，调整解码参数');
+    // 检查是否需要限流
+    final now = DateTime.now();
+    if (now.difference(_lastOptimizationTime) < _minOptimizationInterval) {
+      return; // 太频繁，跳过本次调整
+    }
+    
+    if (_consecutiveAdjustments >= _maxConsecutiveAdjustments) {
+      print('连续调整次数过多，暂停优化以避免循环');
+      return;
+    }
+    
+    print('帧率过低，调整解码参数 (第${_consecutiveAdjustments + 1}次)');
     
     // 启用硬件加速
     // 降低质量要求
     _currentProfile = OptimizationProfile(
-      name: '${_currentProfile.name} (帧率优化)',
+      name: '帧率优化模式', // 使用固定名称，避免累积
       maxFPS: _currentProfile.maxFPS,
       bufferSize: _currentProfile.bufferSize,
       lowLatencyMode: _currentProfile.lowLatencyMode,
@@ -267,6 +325,9 @@ class PerformanceOptimizationService {
       cpuThreshold: _currentProfile.cpuThreshold,
       memoryThreshold: _currentProfile.memoryThreshold,
     );
+    
+    _lastOptimizationTime = now;
+    _consecutiveAdjustments++;
     
     _applyOptimizationProfile(_currentProfile);
   }
@@ -289,7 +350,7 @@ class PerformanceOptimizationService {
       final newMaxFPS = (_currentProfile.maxFPS * 1.2).round().clamp(15, 60);
       
       _currentProfile = OptimizationProfile(
-        name: '${_currentProfile.name} (质量提升)',
+        name: '质量优化模式', // 使用固定名称，避免累积
         maxFPS: newMaxFPS,
         bufferSize: _currentProfile.bufferSize,
         lowLatencyMode: _currentProfile.lowLatencyMode,
@@ -341,6 +402,8 @@ class PerformanceOptimizationService {
     const platform = MethodChannel('padcast/performance');
     try {
       await platform.invokeMethod('setCpuPerformanceMode', {'enable': enable});
+    } on MissingPluginException {
+      // 原生插件未实现，静默忽略
     } catch (e) {
       print('设置CPU性能模式失败: $e');
     }
@@ -350,6 +413,8 @@ class PerformanceOptimizationService {
     const platform = MethodChannel('padcast/performance');
     try {
       await platform.invokeMethod('setGpuOptimizations', {'enable': enable});
+    } on MissingPluginException {
+      // 原生插件未实现，静默忽略
     } catch (e) {
       print('设置GPU优化失败: $e');
     }
@@ -365,6 +430,8 @@ class PerformanceOptimizationService {
       await platform.invokeMethod('setMemoryThreshold', {
         'threshold': profile.memoryThreshold,
       });
+    } on MissingPluginException {
+      // 原生插件未实现，静默忽略
     } catch (e) {
       print('设置内存阈值失败: $e');
     }

@@ -159,4 +159,21 @@ class Log {
   static void e(String module, String message, [Object? error, StackTrace? stackTrace]) {
     _logger.error(module, message, error, stackTrace);
   }
+  
+  // 调试模式相关
+  static bool _debugMode = false;
+  static bool _verboseMode = false;
+  
+  static bool get isDebugMode => _debugMode;
+  static bool get isVerboseMode => _verboseMode;
+  
+  static void setDebugMode(bool enabled) {
+    _debugMode = enabled;
+    print('调试模式${enabled ? '已启用' : '已禁用'}');
+  }
+  
+  static void setVerboseMode(bool enabled) {
+    _verboseMode = enabled;
+    print('详细日志模式${enabled ? '已启用' : '已禁用'}');
+  }
 }

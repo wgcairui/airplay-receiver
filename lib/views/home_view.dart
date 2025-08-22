@@ -7,6 +7,9 @@ import '../services/network_monitor_service.dart';
 import '../widgets/connection_status_widget.dart';
 import '../widgets/device_info_widget.dart';
 import '../widgets/control_buttons_widget.dart';
+import '../widgets/toast_notification.dart';
+import '../utils/animation_utils.dart';
+import 'settings_view.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -15,8 +18,33 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   AirPlayConnectionState? _lastConnectionState;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+    _pulseAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.2,
+    ).animate(CurvedAnimation(
+      parent: _pulseController,
+      curve: Curves.easeInOut,
+    ));
+    _pulseController.repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,24 +62,39 @@ class _HomeViewState extends State<HomeView> {
         foregroundColor: Colors.black87,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.pushNamed(context, '/settings');
-            },
+          BouncyButton(
+            child: IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  PageTransitions.slideTransition(
+                    page: const SettingsView(),
+                    begin: const Offset(1.0, 0.0),
+                  ),
+                );
+              },
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.bug_report_outlined),
-            onPressed: () {
-              Navigator.pushNamed(context, '/debug');
-            },
-            tooltip: '调试日志',
+          BouncyButton(
+            child: IconButton(
+              icon: const Icon(Icons.bug_report_outlined),
+              onPressed: () {
+                Navigator.pushNamed(context, '/debug');
+              },
+              tooltip: '调试日志',
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // TODO: 实现通知页面
-            },
+          BouncyButton(
+            child: IconButton(
+              icon: const Icon(Icons.notifications_outlined),
+              onPressed: () {
+                ToastNotification.showInfo(
+                  context,
+                  message: '通知功能开发中...',
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -72,76 +115,115 @@ class _HomeViewState extends State<HomeView> {
                 const SizedBox(height: 32),
                 
                 // 连接状态显示
-                ConnectionStatusWidget(connectionState: connectionState),
+                AnimationUtils.fadeSlideIn(
+                  child: ConnectionStatusWidget(connectionState: connectionState),
+                ),
                 
                 const SizedBox(height: 48),
                 
                 // 设备信息卡片
-                const DeviceInfoWidget(),
+                AnimationUtils.fadeSlideIn(
+                  child: const DeviceInfoWidget(),
+                ),
                 
                 const SizedBox(height: 32),
                 
                 // 等待连接状态图标
                 if (!connectionState.isStreaming)
-                  Container(
-                    width: 200,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(AppConstants.cardRadius),
-                      border: Border.all(
-                        color: _getStatusColor(connectionState.status).withValues(alpha: 0.3),
-                        width: 2,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          _getStatusIcon(connectionState.status),
-                          size: 64,
-                          color: _getStatusColor(connectionState.status),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _getStatusDescription(connectionState.status),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
+                  AnimationUtils.scaleIn(
+                    child: AnimatedBuilder(
+                      animation: _pulseAnimation,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: connectionState.status == ConnectionStatus.discovering 
+                              ? _pulseAnimation.value 
+                              : 1.0,
+                          child: Container(
+                            width: 200,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+                              border: Border.all(
+                                color: _getStatusColor(connectionState.status).withValues(alpha: 0.3),
+                                width: 2,
+                              ),
+                              boxShadow: connectionState.status == ConnectionStatus.discovering
+                                  ? [
+                                      BoxShadow(
+                                        color: _getStatusColor(connectionState.status).withValues(alpha: 0.3),
+                                        blurRadius: 20,
+                                        spreadRadius: 5,
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  _getStatusIcon(connectionState.status),
+                                  size: 64,
+                                  color: _getStatusColor(connectionState.status),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  _getStatusDescription(connectionState.status),
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
                   ),
                 
                 // 流媒体显示区域（占位符）
                 if (connectionState.isStreaming)
-                  Container(
-                    width: double.infinity,
-                    height: 400,
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(AppConstants.cardRadius),
-                    ),
-                    child: const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.cast_connected,
-                            size: 64,
-                            color: Colors.white,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            '投屏内容显示区域',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                            ),
+                  AnimationUtils.scaleIn(
+                    curve: Curves.elasticOut,
+                    child: Container(
+                      width: double.infinity,
+                      height: 400,
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.withValues(alpha: 0.3),
+                            blurRadius: 15,
+                            spreadRadius: 3,
                           ),
                         ],
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            AnimationUtils.rotate(
+                              child: const Icon(
+                                Icons.cast_connected,
+                                size: 64,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            AnimationUtils.fadeIn(
+                              child: const Text(
+                                '投屏内容显示区域',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -149,16 +231,56 @@ class _HomeViewState extends State<HomeView> {
                 const SizedBox(height: 32),
                 
                 // 控制按钮
-                ControlButtonsWidget(
-                  isServiceRunning: controller.isServiceRunning,
-                  connectionState: connectionState,
-                  onToggleService: () => controller.toggleService(),
+                AnimationUtils.fadeSlideIn(
+                  child: ControlButtonsWidget(
+                    isServiceRunning: controller.isServiceRunning,
+                    isServiceStarting: controller.airplayService.isStarting,
+                    isServiceStopping: controller.airplayService.isStopping,
+                    connectionState: connectionState,
+                    onToggleService: () => controller.toggleService(),
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // 连接测试快捷按钮
+                AnimationUtils.fadeSlideIn(
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: BouncyButton(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/connectionTest');
+                        },
+                        icon: const Icon(Icons.network_check, size: 20),
+                        label: const Text(
+                          '连接诊断测试',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppConstants.buttonRadius),
+                          ),
+                          side: BorderSide(
+                            color: Colors.blue[300]!,
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
                 
                 const SizedBox(height: 24),
                 
                 // 网络信息
-                _buildNetworkInfoCard(context, controller.networkInfo, connectionState),
+                AnimationUtils.fadeSlideIn(
+                  child: _buildNetworkInfoCard(context, controller.networkInfo, connectionState),
+                ),
               ],
             ),
           );
@@ -365,10 +487,59 @@ class _HomeViewState extends State<HomeView> {
   }
   
   void _handleConnectionStateChange(AirPlayConnectionState newState) {
-    // 如果状态从非streaming变为streaming，自动跳转到视频页面
-    if (_lastConnectionState?.status != ConnectionStatus.streaming &&
-        newState.status == ConnectionStatus.streaming) {
-      Navigator.pushNamed(context, '/video');
+    final oldStatus = _lastConnectionState?.status;
+    final newStatus = newState.status;
+    
+    // 显示状态变化的Toast通知
+    if (oldStatus != newStatus) {
+      switch (newStatus) {
+        case ConnectionStatus.discovering:
+          ToastNotification.showInfo(
+            context,
+            title: '服务已启动',
+            message: '正在广播设备信息，等待Mac设备连接...',
+          );
+          break;
+        case ConnectionStatus.connecting:
+          ToastNotification.showInfo(
+            context,
+            title: '设备连接中',
+            message: '正在与Mac设备建立连接...',
+          );
+          break;
+        case ConnectionStatus.connected:
+          ToastNotification.showSuccess(
+            context,
+            title: '连接成功',
+            message: 'Mac设备已成功连接，等待投屏开始',
+          );
+          break;
+        case ConnectionStatus.streaming:
+          ToastNotification.showSuccess(
+            context,
+            title: '投屏已开始',
+            message: '正在接收Mac设备的屏幕内容',
+          );
+          // 自动跳转到视频页面
+          Navigator.pushNamed(context, '/video');
+          break;
+        case ConnectionStatus.error:
+          ToastNotification.showError(
+            context,
+            title: '连接错误',
+            message: '连接过程中出现问题，请检查网络设置',
+          );
+          break;
+        case ConnectionStatus.disconnected:
+          if (oldStatus == ConnectionStatus.streaming) {
+            ToastNotification.showWarning(
+              context,
+              title: '投屏已结束',
+              message: 'Mac设备已断开连接',
+            );
+          }
+          break;
+      }
     }
     
     _lastConnectionState = newState;

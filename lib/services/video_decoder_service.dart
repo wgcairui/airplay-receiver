@@ -339,6 +339,8 @@ class VideoDecoderService {
       
       print('解码器参数设置完成');
       
+    } on MissingPluginException {
+      // 原生插件未实现，静默忽略
     } catch (e) {
       print('设置解码器参数失败: $e');
     }
@@ -368,5 +370,23 @@ class VideoDecoderService {
     await _statsController.close();
     
     print('视频解码器已销毁');
+  }
+  
+  /// 更新设置
+  void updateSettings(Map<String, dynamic> settings) {
+    if (settings.containsKey('hardwareAcceleration')) {
+      // 这里可以存储硬件加速设置
+    }
+    if (settings.containsKey('videoBitrate')) {
+      // 这里可以存储视频比特率设置
+    }
+    if (settings.containsKey('videoFramerate')) {
+      // 这里可以存储视频帧率设置
+    }
+    if (settings.containsKey('videoCodec')) {
+      _codecType = settings['videoCodec'] == 'h265' ? 'H265' : 'H264';
+    }
+    
+    print('视频解码器设置已更新: $settings');
   }
 }

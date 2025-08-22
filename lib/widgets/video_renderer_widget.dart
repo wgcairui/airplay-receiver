@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../services/video_decoder_service.dart';
 import '../services/audio_video_sync_service.dart';
 import '../services/performance_monitor_service.dart';
+import 'native_video_texture.dart';
 
 class VideoRendererWidget extends StatefulWidget {
   final VideoDecoderService? decoderService;
@@ -219,40 +220,35 @@ class _VideoRendererWidgetState extends State<VideoRendererWidget>
       return Container(
         color: Colors.black,
         child: const Center(
-          child: Icon(
-            Icons.tv,
-            size: 64,
-            color: Colors.white54,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.tv,
+                size: 64,
+                color: Colors.white54,
+              ),
+              SizedBox(height: 16),
+              Text(
+                '等待视频流...',
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 16,
+                ),
+              ),
+            ],
           ),
         ),
       );
     }
     
-    // TODO: 集成原生视频渲染器
-    // 这里应该使用Platform View或Texture Widget
-    return Container(
-      color: Colors.black,
-      child: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.play_circle_outline,
-              size: 64,
-              color: Colors.white54,
-            ),
-            SizedBox(height: 16),
-            Text(
-              '视频渲染器\n(开发中)',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white54,
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-      ),
+    // 使用原生纹理渲染器
+    return VideoPlayerWidget(
+      showControls: false,
+      onTap: () {
+        _toggleControls();
+        widget.onTap?.call();
+      },
     );
   }
   

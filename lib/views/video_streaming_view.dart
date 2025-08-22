@@ -3,8 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../controllers/airplay_controller.dart';
 import '../widgets/video_renderer_widget.dart';
-import '../services/video_decoder_service.dart';
-import '../services/performance_monitor_service.dart';
 import '../models/connection_state.dart' show ConnectionStatus;
 
 class VideoStreamingView extends StatefulWidget {

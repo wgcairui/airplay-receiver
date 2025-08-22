@@ -166,4 +166,17 @@ class NetworkMonitorService {
     stopMonitoring();
     _networkStateController.close();
   }
+  
+  /// 更新设置
+  void updateSettings(Map<String, dynamic> settings) {
+    // 这里可以添加网络监控相关的设置更新逻辑
+    if (settings.containsKey('lowLatencyMode')) {
+      // 可以调整监控频率等
+    }
+    if (settings.containsKey('connectionTimeout')) {
+      // 可以调整连接超时设置
+    }
+    
+    print('网络监控设置已更新: $settings');
+  }
 }

@@ -4,12 +4,16 @@ import '../constants/app_constants.dart';
 
 class ControlButtonsWidget extends StatelessWidget {
   final bool isServiceRunning;
+  final bool isServiceStarting;
+  final bool isServiceStopping;
   final AirPlayConnectionState connectionState;
   final VoidCallback onToggleService;
   
   const ControlButtonsWidget({
     super.key,
     required this.isServiceRunning,
+    this.isServiceStarting = false,
+    this.isServiceStopping = false,
     required this.connectionState,
     required this.onToggleService,
   });
@@ -22,22 +26,17 @@ class ControlButtonsWidget extends StatelessWidget {
         // 开启/关闭接收按钮
         Expanded(
           child: ElevatedButton.icon(
-            onPressed: onToggleService,
-            icon: Icon(
-              isServiceRunning ? Icons.stop : Icons.play_arrow,
-              size: 24,
-            ),
+            onPressed: (isServiceStarting || isServiceStopping) ? null : onToggleService,
+            icon: _buildButtonIcon(),
             label: Text(
-              isServiceRunning ? '关闭接收' : '开启接收',
+              _getButtonText(),
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: isServiceRunning 
-                  ? Colors.red[400] 
-                  : Colors.blue[600],
+              backgroundColor: _getButtonColor(),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -78,5 +77,45 @@ class ControlButtonsWidget extends StatelessWidget {
         ),
       ],
     );
+  }
+  
+  Widget _buildButtonIcon() {
+    if (isServiceStarting || isServiceStopping) {
+      return const SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        ),
+      );
+    }
+    
+    return Icon(
+      isServiceRunning ? Icons.stop : Icons.play_arrow,
+      size: 24,
+    );
+  }
+  
+  String _getButtonText() {
+    if (isServiceStarting) {
+      return '启动中...';
+    } else if (isServiceStopping) {
+      return '停止中...';
+    } else if (isServiceRunning) {
+      return '关闭接收';
+    } else {
+      return '开启接收';
+    }
+  }
+  
+  Color _getButtonColor() {
+    if (isServiceStarting || isServiceStopping) {
+      return Colors.grey[600]!;
+    } else if (isServiceRunning) {
+      return Colors.red[400]!;
+    } else {
+      return Colors.blue[600]!;
+    }
   }
 }

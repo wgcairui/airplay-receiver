@@ -1,0 +1,124 @@
+name: 🐛 Bug 报告
+description: 报告一个bug来帮助我们改进
+title: "[Bug] "
+labels: ["bug"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您花时间填写这个bug报告！
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 问题描述
+      description: 简洁清晰地描述遇到的问题
+      placeholder: 描述发生了什么...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 重现步骤
+      description: 详细描述如何重现这个问题
+      placeholder: |
+        1. 前往 '...'
+        2. 点击 '....'
+        3. 滚动到 '....'
+        4. 看到错误
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: 预期行为
+      description: 描述您期望发生什么
+      placeholder: 我期望...
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 截图
+      description: 如果适用，添加截图来帮助解释问题
+      placeholder: 拖拽图片到这里或点击上传
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: 设备类型
+      description: 您使用的设备类型
+      options:
+        - OPPO Pad 4 Pro (13.2英寸)
+        - OPPO Pad Air
+        - 小米平板
+        - 华为MatePad
+        - iPad
+        - 其他Android平板
+        - 其他设备
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: 操作系统版本
+      description: 您的设备操作系统版本
+      placeholder: 例如：Android 12, ColorOS 13.1
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: 应用版本
+      description: PadCast应用的版本
+      placeholder: 例如：1.0.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: network-type
+    attributes:
+      label: 网络类型
+      description: 发生问题时使用的网络类型
+      options:
+        - WiFi
+        - 以太网
+        - 移动网络
+        - 不确定
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志输出
+      description: 如果有相关的日志输出，请粘贴在这里
+      render: shell
+      placeholder: 粘贴日志...
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 其他信息
+      description: 添加关于问题的任何其他信息
+      placeholder: 其他可能有用的信息...
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 确认
+      description: 在提交之前，请确认以下事项
+      options:
+        - label: 我已经搜索了现有的issues，确认这个问题尚未被报告
+          required: true
+        - label: 我使用的是最新版本的PadCast应用
+          required: true
+        - label: 我已经提供了足够的信息来重现问题
+          required: true

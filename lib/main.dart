@@ -5,6 +5,8 @@ import 'views/home_view.dart';
 import 'views/settings_view.dart';
 import 'views/video_streaming_view.dart';
 import 'views/debug_log_view.dart';
+import 'views/connection_test_view.dart';
+import 'views/automated_test_view.dart';
 import 'constants/app_constants.dart';
 
 void main() {
@@ -63,6 +65,8 @@ class PadCastApp extends StatelessWidget {
           '/settings': (context) => const SettingsView(),
           '/video': (context) => const VideoStreamingView(),
           '/debug': (context) => const DebugLogView(),
+          '/connectionTest': (context) => const ConnectionTestView(),
+          '/automatedTest': (context) => const AutomatedTestView(),
         },
         
         initialRoute: '/',
