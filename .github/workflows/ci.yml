@@ -84,7 +84,7 @@ jobs:
         run: flutter build apk --debug --split-per-abi
 
       - name: 构建APK (Release)
-        if: github.event_name == 'release'
+        if: github.event_name == 'release' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: flutter build apk --release --split-per-abi
 
       - name: 构建App Bundle (Release)
@@ -94,19 +94,46 @@ jobs:
       - name: 上传APK构建产物
         uses: actions/upload-artifact@v4
         with:
-          name: android-apk
+          name: android-apk-${{ github.sha }}
           path: |
             build/app/outputs/flutter-apk/*.apk
             build/app/outputs/bundle/release/*.aab
           retention-days: 30
 
-      - name: 上传Release资产
-        if: github.event_name == 'release'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 创建自动发布 (仅主分支推送)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-          asset_name: padcast-v${{ github.event.release.tag_name }}-arm64-v8a.apk
-          asset_content_type: application/vnd.android.package-archive
+          tag_name: auto-${{ github.sha }}
+          name: "自动构建 ${{ github.sha }}"
+          body: |
+            🤖 自动构建版本
+            
+            **提交信息**: ${{ github.event.head_commit.message }}
+            **提交者**: ${{ github.event.head_commit.author.name }}
+            **提交时间**: ${{ github.event.head_commit.timestamp }}
+            **提交SHA**: ${{ github.sha }}
+            
+            📦 包含的APK文件:
+            - `app-arm64-v8a-release.apk` - ARM64 设备 (推荐)
+            - `app-armeabi-v7a-release.apk` - ARM32 设备
+            - `app-x86_64-release.apk` - x86_64 设备
+            
+            🔧 Generated with [Claude Code](https://claude.ai/code)
+          files: |
+            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            build/app/outputs/flutter-apk/app-x86_64-release.apk
+          prerelease: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 上传Release资产 (手动发布)
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            build/app/outputs/flutter-apk/app-x86_64-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+          token: ${{ secrets.GITHUB_TOKEN }}

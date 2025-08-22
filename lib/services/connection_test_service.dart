@@ -189,7 +189,7 @@ class ConnectionTestService {
               await request.close().timeout(const Duration(milliseconds: 2000));
 
           if (response.statusCode == 200) {
-            final responseBody = await response
+            await response
                 .transform(utf8.decoder)
                 .join()
                 .timeout(const Duration(milliseconds: 1000));
