@@ -487,7 +487,11 @@ class AirPlayService {
       AppConstants.airplayPort,
     );
 
+    final localIP = _networkMonitor.currentNetworkInfo.ipAddress ?? 'Unknown';
     Log.i('AirPlayService', 'HTTP服务器启动在端口: ${AppConstants.airplayPort}');
+    Log.i('AirPlayService', '服务器绑定到: 0.0.0.0:${AppConstants.airplayPort}');
+    Log.i('AirPlayService', '本地访问: http://127.0.0.1:${AppConstants.airplayPort}/info');
+    Log.i('AirPlayService', '网络访问: http://$localIP:${AppConstants.airplayPort}/info');
   }
 
   Future<void> _waitForNetworkConnection() async {
