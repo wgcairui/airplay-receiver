@@ -546,22 +546,28 @@ class SettingsService {
       if (settings.httpPort == settings.rtspPort) return false;
 
       // 验证视频参数
-      if (settings.videoBitrate < 100 || settings.videoBitrate > 50000)
+      if (settings.videoBitrate < 100 || settings.videoBitrate > 50000) {
         return false;
-      if (settings.videoFramerate < 1 || settings.videoFramerate > 120)
+      }
+      if (settings.videoFramerate < 1 || settings.videoFramerate > 120) {
         return false;
+      }
 
       // 验证音频参数
-      if (settings.audioBitrate < 64 || settings.audioBitrate > 2000)
+      if (settings.audioBitrate < 64 || settings.audioBitrate > 2000) {
         return false;
-      if (settings.audioSampleRate < 8000 || settings.audioSampleRate > 192000)
+      }
+      if (settings.audioSampleRate < 8000 || settings.audioSampleRate > 192000) {
         return false;
+      }
 
       // 验证同步参数
-      if (settings.syncThreshold < 10 || settings.syncThreshold > 200)
+      if (settings.syncThreshold < 10 || settings.syncThreshold > 200) {
         return false;
-      if (settings.jitterBufferSize < 10 || settings.jitterBufferSize > 500)
+      }
+      if (settings.jitterBufferSize < 10 || settings.jitterBufferSize > 500) {
         return false;
+      }
 
       // 验证缓冲区大小
       if (settings.bufferSize < 1 || settings.bufferSize > 100) return false;
