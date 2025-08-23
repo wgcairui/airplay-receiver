@@ -80,6 +80,9 @@ class MdnsPlugin : FlutterPlugin, MethodCallHandler {
             
             mdnsAddress = InetAddress.getByName(MDNS_ADDRESS)
             
+            // 加入mDNS多播组 - 这是关键步骤！
+            multicastSocket?.joinGroup(mdnsAddress)
+            
             // 开始定期广播
             scheduler = Executors.newSingleThreadScheduledExecutor()
             scheduler?.scheduleWithFixedDelay({
@@ -102,6 +105,15 @@ class MdnsPlugin : FlutterPlugin, MethodCallHandler {
             
             scheduler?.shutdown()
             scheduler = null
+            
+            // 离开mDNS多播组
+            mdnsAddress?.let { addr ->
+                try {
+                    multicastSocket?.leaveGroup(addr)
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to leave multicast group", e)
+                }
+            }
             
             multicastSocket?.close()
             multicastSocket = null
